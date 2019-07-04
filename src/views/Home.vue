@@ -14,37 +14,41 @@
         </label>
       </fieldset>
     </div>
-    <TrianglesDisplay :cell-size="Number(cellSize)" :seed="seed"/>
-
+    <TrianglesDisplay
+      :cell-size="cellSize"
+      :height="height"
+      :seed="seed"
+      :width="width"
+    />
     <div class="controls">
-      <fieldset><legend>roughness</legend>
+      <fieldset>
+        <legend>roughness</legend>
         <label>roughness
-          <input v-model.number="roughness" type="range" min="0" max="12" step="0.5">
+          <input max="12" min="0" step="0.5" type="range" v-model.number="roughness">
         </label>
         <label>bowing
-          <input v-model.number="bowing" type="range" min="0" max="12" step="0.5">
+          <input max="12" min="0" step="0.5" type="range" v-model.number="bowing">
         </label>
       </fieldset>
       <fieldset>
         <legend>border</legend>
         <label>color
-          <input v-model="strokeColor" type="color">
+          <input type="color" v-model="strokeColor">
         </label>
         <label>width
-          <input v-model.number="strokeWidth" type="range" min="0" max="12" step="0.5">
+          <input max="12" min="0" step="0.5" type="range" v-model.number="strokeWidth">
         </label>
-
       </fieldset>
       <fieldset>
         <legend>fill</legend>
         <label>weight
-          <input v-model.number="fillWeight" type="range" min="0" max="20" step="0.5">
+          <input max="20" min="0" step="0.5" type="range" v-model.number="fillWeight">
         </label>
         <label>gap
-          <input v-model.number="hachureGap" type="range" min="0" max="20" step="0.5">
+          <input max="20" min="0" step="0.5" type="range" v-model.number="hachureGap">
         </label>
         <label>angle
-          <input v-model.number="hachureAngle" type="range" min="0" max="360" step="0.5">
+          <input max="360" min="0" step="0.5" type="range" v-model.number="hachureAngle">
         </label>
         <label>style
           <select v-model="fillStyle">
@@ -59,17 +63,16 @@
           </select>
         </label>
       </fieldset>
-
     </div>
     <RoughDisplay
-      :roughness="roughness"
       :bowing="bowing"
-      :stroke-color="strokeColor"
-      :stroke-width="strokeWidth"
+      :fill-style="fillStyle"
       :fill-weight="fillWeight"
       :hachure-angle="hachureAngle"
       :hachure-gap="hachureGap"
-      :fill-style="fillStyle"
+      :roughness="roughness"
+      :stroke-color="strokeColor"
+      :stroke-width="strokeWidth"
     />
   </div>
 </template>
