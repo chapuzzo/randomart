@@ -6,7 +6,7 @@
           <g v-html="triangles"></g>
         </pattern>
         <symbol id="symbol">
-          <rect x="0" y="0" width="100" height="100" fill="url(#pattern)"></rect>
+          <rect x="0" y="0" :height="height" :width="width" fill="url(#pattern)"></rect>
         </symbol>
       </defs>
       <use href="#symbol"></use>
