@@ -70,9 +70,11 @@
       :fill-weight="fillWeight"
       :hachure-angle="hachureAngle"
       :hachure-gap="hachureGap"
+      :height="height"
       :roughness="roughness"
       :stroke-color="strokeColor"
       :stroke-width="strokeWidth"
+      :width="width"
     />
     <div class="controls">
       <fieldset>
@@ -83,6 +85,12 @@
         </label>
         <label>threshold
           <input max="255" min="0" type="range" v-model.number="threshold">
+        </label>
+        <label>fill
+          <select v-model="backgroundPattern">
+            <option value="trianglesPattern">trianglesPattern</option>
+            <option value="roughPattern">roughPattern</option>
+          </select>
         </label>
       </fieldset>
     </div>
@@ -119,7 +127,8 @@ export default {
       threshold: 120,
       blobUrl: null,
       image: null,
-      svg: null
+      svg: null,
+      backgroundPattern: 'trianglesPattern'
     }
   },
   components: {
@@ -156,7 +165,7 @@ export default {
       }
 
       potrace.posterize(this.image, {
-        background: 'url(#pattern)',
+        background: `url(/#${this.backgroundPattern})`,
         color: 'black',
         threshold: this.threshold
       }, (err, svg) => {
@@ -170,6 +179,14 @@ export default {
     }
   },
   watch: {
+    backgroundPattern (newValue, oldValue) {
+      if (newValue === oldValue) {
+        return
+      }
+
+      this.trace()
+    },
+
     threshold (newValue, oldValue) {
       if (newValue === oldValue) {
         return

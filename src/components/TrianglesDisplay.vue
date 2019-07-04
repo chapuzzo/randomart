@@ -2,14 +2,14 @@
   <div class="content">
     <svg>
       <defs>
-        <pattern id="pattern" patternUnits="userSpaceOnUse" x="0" y="0" :height="height" :width="width">
+        <pattern id="trianglesPattern" patternUnits="userSpaceOnUse" x="0" y="0" :height="height" :width="width">
           <g v-html="triangles"></g>
         </pattern>
-        <symbol id="symbol">
-          <rect x="0" y="0" :height="height" :width="width" fill="url(#pattern)"></rect>
+        <symbol id="trianglesSymbol">
+          <rect x="0" y="0" :height="height" :width="width" fill="url(#trianglesPattern)"></rect>
         </symbol>
       </defs>
-      <use href="#symbol"></use>
+      <use href="#trianglesSymbol"></use>
     </svg>
   </div>
 </template>

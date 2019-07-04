@@ -1,6 +1,16 @@
 <template>
   <div class="content">
-    <svg class="rough" v-html="svg"></svg>
+    <svg>
+      <defs>
+        <pattern id="roughPattern" patternUnits="userSpaceOnUse" x="0" y="0" :height="height" :width="width">
+          <g v-html="svg"></g>
+        </pattern>
+        <symbol id="roughSymbol">
+          <rect x="0" y="0" :height="height" :width="width" fill="url(#roughPattern)"></rect>
+        </symbol>
+      </defs>
+      <use href="#roughSymbol"></use>
+    </svg>
   </div>
 </template>
 
@@ -23,8 +33,8 @@ export default {
           bowing: this.bowing
         }
       })
-      const rectangle = rc.rectangle(10, 10, 180, 180, {
-        fill: `url(#pattern)`,
+      const rectangle = rc.rectangle(5, 5, this.width - 10, this.height - 10, {
+        fill: `url(#trianglesPattern)`,
         fillStyle: this.fillStyle,
         stroke: this.strokeColor,
         strokeWidth: this.strokeWidth,
@@ -48,7 +58,9 @@ export default {
     fillWeight: Number,
     hachureAngle: Number,
     hachureGap: Number,
-    fillStyle: String
+    fillStyle: String,
+    width: { type: Number, default: 200 },
+    height: { type: Number, default: 200 }
   }
 }
 </script>
