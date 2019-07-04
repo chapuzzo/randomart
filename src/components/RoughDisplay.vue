@@ -23,6 +23,25 @@ export default {
     return {}
   },
 
+  methods: {
+    generateTemplate (base) {
+      const template = `
+        <svg xmlns='http://www.w3.org/2000/svg'>
+        <defs>
+          <pattern id="pattern" patternUnits="userSpaceOnUse" x="0" y="0" height="${this.height}" width="${this.width}">
+            ${base}
+          </pattern>
+        </defs>
+      </svg>`
+
+      return this.createUrl(template)
+    },
+
+    createUrl (object, mime = 'image/svg+xml') {
+      return window.URL.createObjectURL(new Blob([object], { type: mime }))
+    }
+  },
+
   computed: {
     svg () {
       let namespaceURI = 'http://www.w3.org/2000/svg'
@@ -34,7 +53,7 @@ export default {
         }
       })
       const rectangle = rc.rectangle(5, 5, this.width - 10, this.height - 10, {
-        fill: `url(#trianglesPattern)`,
+        fill: `url(${this.pattern})`,
         fillStyle: this.fillStyle,
         stroke: this.strokeColor,
         strokeWidth: this.strokeWidth,
@@ -44,11 +63,16 @@ export default {
       })
       svgElement.appendChild(rectangle)
 
-      return svgElement.innerHTML
+      let innerHTML = svgElement.innerHTML
+
+      this.$emit('updatedPattern', this.generateTemplate(innerHTML))
+      return innerHTML
     }
   },
 
   props: {
+    pattern: String,
+
     roughness: Number,
     bowing: Number,
 

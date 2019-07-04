@@ -19,6 +19,7 @@
       :height="height"
       :seed="seed"
       :width="width"
+      @updatedPattern="updatedPattern('triangle', $event)"
     />
     <div class="controls">
       <fieldset>
@@ -75,6 +76,8 @@
       :stroke-color="strokeColor"
       :stroke-width="strokeWidth"
       :width="width"
+      @updatedPattern="updatedPattern('rough', $event)"
+      :pattern="backgroundPatterns.triangle"
     />
     <div class="controls">
       <fieldset>
@@ -88,15 +91,22 @@
         </label>
         <label>fill
           <select v-model="backgroundPattern">
-            <option value="trianglesPattern">trianglesPattern</option>
-            <option value="roughPattern">roughPattern</option>
+            <option v-for="(value, type) in backgroundPatterns"
+                    :value="value"
+                    :key="type"
+            >
+              {{type}}
+            </option>
           </select>
         </label>
       </fieldset>
     </div>
 
-    <div v-html="svg"></div>
-    <div><img :src="blobUrl"></div>
+    <div id="result" v-html="svg"></div>
+    <div><img id="image" :src="blobUrl" :alt="blobUrl"></div>
+    <div class="controls">
+      <input @click="downloadImage('#image')" type="button" v-if="svg" value="download">
+    </div>
 
   </div>
 </template>
@@ -128,7 +138,11 @@ export default {
       blobUrl: null,
       image: null,
       svg: null,
-      backgroundPattern: 'trianglesPattern'
+      backgroundPattern: '#trianglesPattern',
+      backgroundPatterns: {
+        stockTriangles: '#trianglesPattern',
+        stockRough: '#roughPattern'
+      }
     }
   },
   components: {
@@ -149,7 +163,7 @@ export default {
       fileReader.addEventListener('load', (e) => {
         Jimp.read(e.target.result)
           .then(loadedImage => {
-            const resizedImage = loadedImage.resize(500, Jimp.AUTO)
+            const resizedImage = loadedImage.resize(Jimp.AUTO, 500)
             this.height = resizedImage.getHeight()
             this.width = resizedImage.getWidth()
 
@@ -159,13 +173,18 @@ export default {
       fileReader.readAsDataURL(event.target.files[0])
     },
 
+    updatedPattern (type, value) {
+      console.log({ type, value })
+      this.backgroundPatterns[type] = `${value}#pattern`
+    },
+
     trace () {
       if (!this.image) {
         return null
       }
 
       potrace.posterize(this.image, {
-        background: `url(/#${this.backgroundPattern})`,
+        background: `url(${this.backgroundPattern})`,
         color: 'black',
         threshold: this.threshold
       }, (err, svg) => {
@@ -176,6 +195,43 @@ export default {
         this.blobUrl = this.createUrl(svg)
         this.svg = svg
       })
+    },
+
+    downloadImage (selector) {
+      const extracted = (image) => {
+        console.log('loaded image')
+        const canvas = document.createElement('canvas')
+        canvas.setAttribute('width', this.width)
+        canvas.setAttribute('height', this.height)
+        console.log('set image attrs')
+
+        const context = canvas.getContext('2d')
+
+        context.drawImage(image, 0, 0)
+        console.log('drawn in canvas')
+
+        const a = document.createElement('a')
+        a.download = 'generated_image.png'
+        a.href = canvas.toDataURL('image/png')
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        console.log('scheduled download')
+      }
+
+      if (!selector) {
+        const image = new Image()
+        console.log(image)
+        image.src = this.blobUrl
+
+        image.addEventListener('load', () => {
+          extracted(image)
+        })
+        return
+      }
+
+      const image = document.querySelector(selector)
+      extracted(image)
     }
   },
   watch: {

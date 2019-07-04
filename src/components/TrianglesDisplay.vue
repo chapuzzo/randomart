@@ -24,20 +24,27 @@ export default {
     }
   },
   methods: {
-    generateUrl: function (svg) {
-      const blob = new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
-          <defs>
-            <pattern id="xxx" patternUnits="userSpaceOnUse" x="0" y="0" width="500" height="500">
-                ${svg.innerHTML}
-            </pattern>
-          </defs>
-        </svg>`], { type: 'image/svg+xml' })
+    generateTemplate (base) {
+      const template = `
+        <svg xmlns='http://www.w3.org/2000/svg'>
+        <defs>
+          <pattern id="pattern" patternUnits="userSpaceOnUse" x="0" y="0" height="${this.height}" width="${this.width}">
+            ${base}
+          </pattern>
+        </defs>
+      </svg>`
 
-      return URL.createObjectURL(blob)
+      return this.createUrl(template)
+    },
+
+    createUrl (object, mime = 'image/svg+xml') {
+      return window.URL.createObjectURL(new Blob([object], { type: mime }))
     }
+
   },
   computed: {
     triangles () {
+      console.log('recalculated triangles')
       const triangles = Trianglify({
         width: this.width,
         height: this.height,
@@ -47,8 +54,10 @@ export default {
       })
 
       let svg = triangles.svg()
+      let innerHTML = svg.innerHTML
 
-      return svg.innerHTML
+      this.$emit('updatedPattern', this.generateTemplate(innerHTML))
+      return innerHTML
     }
   },
   props: {
