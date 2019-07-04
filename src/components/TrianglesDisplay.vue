@@ -63,8 +63,6 @@ export default {
 
 <style lang="scss" scoped>
   svg {
-    margin: 20px auto;
-    display: block;
     width: 200px;
     height: 200px;
   }

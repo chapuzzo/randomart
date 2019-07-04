@@ -38,21 +38,8 @@
       }
     }
   }
-
-  .controls {
-    margin-left: auto;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-end;
-    >input, fieldset {
-      width: 25%;
-      label {
-        display: flex;
-        justify-content: flex-end;
-        > input[type="color"] {
-          margin-left:  6px;
-        }
-      }
-    }
+  svg {
+    margin: 20px auto;
+    display: block;
   }
 </style>
