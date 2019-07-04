@@ -74,6 +74,22 @@
       :stroke-color="strokeColor"
       :stroke-width="strokeWidth"
     />
+    <div class="controls">
+      <fieldset>
+        <legend>image</legend>
+        <label>
+          <span class="input">select</span>
+          <input @change="loadFile" hidden type="file">
+        </label>
+        <label>threshold
+          <input max="255" min="0" type="range" v-model.number="threshold">
+        </label>
+      </fieldset>
+    </div>
+
+    <div v-html="svg"></div>
+    <div><img :src="blobUrl"></div>
+
   </div>
 </template>
 
@@ -81,6 +97,8 @@
 import TrianglesDisplay from '../components/TrianglesDisplay.vue'
 import RoughDisplay from '../components/RoughDisplay.vue'
 import { getSeed } from '../utils'
+import potrace from 'potrace'
+import Jimp from 'jimp'
 
 export default {
   name: 'home',
@@ -95,7 +113,13 @@ export default {
       fillWeight: 2,
       hachureAngle: 45,
       hachureGap: 5,
-      fillStyle: 'hachure'
+      fillStyle: 'hachure',
+      width: 200,
+      height: 200,
+      threshold: 120,
+      blobUrl: null,
+      image: null,
+      svg: null
     }
   },
   components: {
@@ -105,6 +129,60 @@ export default {
   methods: {
     regenerateSeed () {
       this.seed = getSeed()
+    },
+
+    createUrl (object, mime = 'image/svg+xml') {
+      return window.URL.createObjectURL(new Blob([object], { type: mime }))
+    },
+
+    loadFile (event) {
+      const fileReader = new FileReader()
+      fileReader.addEventListener('load', (e) => {
+        Jimp.read(e.target.result)
+          .then(loadedImage => {
+            const resizedImage = loadedImage.resize(500, Jimp.AUTO)
+            this.height = resizedImage.getHeight()
+            this.width = resizedImage.getWidth()
+
+            this.image = resizedImage
+          })
+      })
+      fileReader.readAsDataURL(event.target.files[0])
+    },
+
+    trace () {
+      if (!this.image) {
+        return null
+      }
+
+      potrace.posterize(this.image, {
+        background: 'url(#pattern)',
+        color: 'black',
+        threshold: this.threshold
+      }, (err, svg) => {
+        if (err) {
+          console.error(err)
+          return
+        }
+        this.blobUrl = this.createUrl(svg)
+        this.svg = svg
+      })
+    }
+  },
+  watch: {
+    threshold (newValue, oldValue) {
+      if (newValue === oldValue) {
+        return
+      }
+
+      this.trace()
+    },
+    image (newValue) {
+      if (!newValue) {
+        return
+      }
+
+      this.trace()
     }
   }
 }
