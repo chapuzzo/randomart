@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <svg v-html="svg"></svg>
+    <svg class="rough" v-html="svg"></svg>
   </div>
 </template>
 
@@ -13,17 +13,25 @@ export default {
     return {}
   },
 
-  mounted () { console.log(rough) },
-
   computed: {
     svg () {
-      const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      let namespaceURI = 'http://www.w3.org/2000/svg'
+      const svgElement = document.createElementNS(namespaceURI, 'svg')
       const rc = rough.svg(svgElement, {
         options: {
-          roughness: this.roughness
+          roughness: this.roughness,
+          bowing: this.bowing
         }
       })
-      const rectangle = rc.rectangle(10, 10, 180, 180, { fill: this.color })
+      const rectangle = rc.rectangle(10, 10, 180, 180, {
+        fill: `url(#pattern)`,
+        fillStyle: this.fillStyle,
+        stroke: this.strokeColor,
+        strokeWidth: this.strokeWidth,
+        fillWeight: this.fillWeight,
+        hachureAngle: this.hachureAngle,
+        hachureGap: this.hachureGap
+      })
       svgElement.appendChild(rectangle)
 
       return svgElement.innerHTML
@@ -32,7 +40,15 @@ export default {
 
   props: {
     roughness: Number,
-    color: String
+    bowing: Number,
+
+    strokeColor: String,
+    strokeWidth: Number,
+
+    fillWeight: Number,
+    hachureAngle: Number,
+    hachureGap: Number,
+    fillStyle: String
   }
 }
 </script>
