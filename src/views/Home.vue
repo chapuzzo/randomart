@@ -1,9 +1,18 @@
 <template>
   <div class="home">
     <div class="controls">
-      <input v-model="cellSize" type="range" min="20" max="200" step="1">
-      <input v-model="seed" type="text"/>
-      <input type="button" @click="regenerateSeed" value="regen">
+      <fieldset>
+        <legend>triangles</legend>
+        <label>zoom
+          <input max="200" min="20" step="1" type="range" v-model.number="cellSize">
+        </label>
+        <label>seed
+          <input type="text" v-model="seed"/>
+        </label>
+        <label>
+          <input @click="regenerateSeed" type="button" value="regen">
+        </label>
+      </fieldset>
     </div>
     <TrianglesDisplay :cell-size="Number(cellSize)" :seed="seed"/>
 
