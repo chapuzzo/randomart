@@ -11,7 +11,6 @@
       </defs>
       <use href="#symbol"></use>
     </svg>
-
   </div>
 </template>
 
@@ -22,8 +21,6 @@ export default {
   name: 'TrianglesDisplay',
   data () {
     return {
-      width: 200,
-      height: 200
     }
   },
   methods: {
@@ -56,7 +53,9 @@ export default {
   },
   props: {
     cellSize: Number,
-    seed: String
+    seed: String,
+    width: Number,
+    height: Number
   }
 }
 </script>
