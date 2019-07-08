@@ -92,7 +92,7 @@
         <label>fill
           <select v-model="backgroundPattern">
             <option v-for="(value, type) in backgroundPatterns"
-                    :value="value"
+                    :value="type"
                     :key="type"
             >
               {{type}}
@@ -242,7 +242,7 @@ export default {
     }
   },
   watch: {
-    backgroundPattern (newValue, oldValue) {
+    background (newValue, oldValue) {
       if (newValue === oldValue) {
         return
       }
