@@ -138,7 +138,7 @@ export default {
       blobUrl: null,
       image: null,
       svg: null,
-      backgroundPattern: '#trianglesPattern',
+      backgroundPattern: 'stockTriangles',
       backgroundPatterns: {
         stockTriangles: '#trianglesPattern',
         stockRough: '#roughPattern'
@@ -149,6 +149,13 @@ export default {
     TrianglesDisplay,
     RoughDisplay
   },
+
+  computed: {
+    background () {
+      return this.backgroundPatterns[this.backgroundPattern]
+    }
+  },
+
   methods: {
     regenerateSeed () {
       this.seed = getSeed()
@@ -184,7 +191,7 @@ export default {
       }
 
       potrace.posterize(this.image, {
-        background: `url(${this.backgroundPattern})`,
+        background: `url(${this.background})`,
         color: 'black',
         threshold: this.threshold
       }, (err, svg) => {
