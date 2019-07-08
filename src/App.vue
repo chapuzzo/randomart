@@ -38,8 +38,4 @@
       }
     }
   }
-  svg {
-    margin: 20px auto;
-    display: block;
-  }
 </style>
