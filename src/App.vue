@@ -1,9 +1,9 @@
 <template>
   <div id="app">
-    <div id="nav" hidden>
-      <router-link to="/">Home</router-link>
+    <div id="nav">
+      <router-link :to="{name: 'classic'}">Classic</router-link>
       |
-      <router-link to="/about">About</router-link>
+      <router-link to="new">New</router-link>
     </div>
     <router-view/>
   </div>
@@ -32,6 +32,7 @@
     a {
       font-weight: bold;
       color: #2c3e50;
+      text-decoration: none;
 
       &.router-link-exact-active {
         color: #42b983;
