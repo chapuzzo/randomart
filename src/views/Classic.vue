@@ -77,7 +77,7 @@
       :stroke-width="strokeWidth"
       :width="width"
       @updatedPattern="updatedPattern('rough', $event)"
-      :pattern="backgroundPatterns.triangle"
+      :pattern="backgroundPatterns.stockTriangles"
     />
     <div class="controls">
       <fieldset>
