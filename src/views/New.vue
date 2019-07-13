@@ -119,6 +119,10 @@ export default {
     },
 
     traced () {
+      if (!this.posterPaths) {
+        return null
+      }
+
       const traced = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
       traced.setAttribute('width', this.width)
       traced.setAttribute('height', this.height)
