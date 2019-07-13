@@ -60,10 +60,11 @@ export default {
       posterizedThumb: null,
       // thumbBlob: null,
       triangles: null,
-      merged: null,
       simplification: 1,
       loading: false,
       posterPaths: []
+      trianglePaths: null,
+      posterPaths: null
     }
   },
   methods: {
@@ -90,26 +91,33 @@ export default {
       const domParser = new DOMParser()
       const posterizedThumb = domParser.parseFromString(this.posterizedThumb, 'image/svg+xml')
 
-      const trianglePaths = Array.from(triangles.querySelectorAll('path'))
+      this.trianglePaths = Array.from(triangles.querySelectorAll('path'))
       this.posterPaths = Array.from(posterizedThumb.querySelectorAll('path'))
-
-      const merged = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-      merged.setAttribute('width', this.width)
-      merged.setAttribute('height', this.height)
-
-      trianglePaths.forEach(path => {
-        merged.appendChild(path)
-      })
-      this.posterPaths.forEach(path => {
-        merged.appendChild(path)
-      })
-
-      this.merged = merged.outerHTML
 
       this.loading = false
     }
   },
   computed: {
+    merged () {
+      if (!this.trianglePaths || !this.posterPaths) {
+        return null
+      }
+
+      const merged = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      merged.setAttribute('width', this.width)
+      merged.setAttribute('height', this.height)
+
+      this.trianglePaths.forEach(path => {
+        merged.appendChild(path)
+      })
+
+      this.posterPaths.forEach(path => {
+        merged.appendChild(path)
+      })
+
+      return merged.outerHTML
+    },
+
     traced () {
       const traced = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
       traced.setAttribute('width', this.width)
