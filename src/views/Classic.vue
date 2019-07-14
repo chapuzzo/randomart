@@ -42,15 +42,6 @@
       </fieldset>
       <fieldset>
         <legend>fill</legend>
-        <label>weight
-          <input max="20" min="0" step="0.5" type="range" v-model.number="fillWeight">
-        </label>
-        <label>gap
-          <input max="20" min="0" step="0.5" type="range" v-model.number="hachureGap">
-        </label>
-        <label>angle
-          <input max="360" min="0" step="0.5" type="range" v-model.number="hachureAngle">
-        </label>
         <label>style
           <select v-model="fillStyle">
             <option value="hachure">hachure</option>
@@ -63,6 +54,17 @@
             <option value="zigzag-line">zigzag-line</option>
           </select>
         </label>
+        <template v-if="fillStyle !== 'solid'">
+          <label>weight
+            <input max="20" min="0" step="0.5" type="range" v-model.number="fillWeight">
+          </label>
+          <label>gap
+            <input max="20" min="0" step="0.5" type="range" v-model.number="hachureGap">
+          </label>
+          <label>angle
+            <input max="360" min="0" step="0.5" type="range" v-model.number="hachureAngle">
+          </label>
+        </template>
       </fieldset>
     </div>
     <RoughDisplay
