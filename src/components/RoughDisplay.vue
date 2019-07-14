@@ -16,6 +16,7 @@
 
 <script>
 import rough from 'roughjs/bin/wrappers/rough'
+import { createUrl } from '../utils'
 
 export default {
   name: 'RoughDisplay',
@@ -34,16 +35,16 @@ export default {
         </defs>
       </svg>`
 
-      return this.createUrl(template)
-    },
-
-    createUrl (object, mime = 'image/svg+xml') {
-      return window.URL.createObjectURL(new Blob([object], { type: mime }))
+      return createUrl(template)
     }
   },
 
   computed: {
     svg () {
+      if (!this.pattern) {
+        return null
+      }
+
       let namespaceURI = 'http://www.w3.org/2000/svg'
       const svgElement = document.createElementNS(namespaceURI, 'svg')
       const rc = rough.svg(svgElement, {

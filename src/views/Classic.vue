@@ -1,5 +1,8 @@
 <template>
   <div class="home">
+    <div class="overlay" v-if="loading">
+      <GridLoader size="20px"/>
+    </div>
     <div class="controls">
       <fieldset>
         <legend>triangles</legend>
@@ -19,7 +22,7 @@
       :height="height"
       :seed="seed"
       :width="width"
-      @updated-pattern="updatedPattern('triangle', $event)"
+      @updated-pattern="updatedTrianglesPattern"
     />
     <div class="controls">
       <fieldset>
@@ -74,12 +77,12 @@
       :hachure-angle="hachureAngle"
       :hachure-gap="hachureGap"
       :height="height"
+      :pattern="backgroundPatterns.triangle"
       :roughness="roughness"
       :stroke-color="strokeColor"
       :stroke-width="strokeWidth"
       :width="width"
-      @updated-pattern="updatedPattern('rough', $event)"
-      :pattern="backgroundPatterns.stockTriangles"
+      @updated-pattern="updatedRoughPattern"
     />
     <div class="controls">
       <fieldset>
@@ -93,9 +96,9 @@
         </label>
         <label>fill
           <select v-model="backgroundPattern">
-            <option v-for="(value, type) in backgroundPatterns"
+            <option :key="type"
                     :value="type"
-                    :key="type"
+                    v-for="(value, type) in backgroundPatterns"
             >
               {{type}}
             </option>
@@ -104,21 +107,25 @@
       </fieldset>
     </div>
 
-    <div id="result" v-html="svg"></div>
-    <div><img id="image" :src="blobUrl" :alt="blobUrl"></div>
-    <div class="controls">
-      <input @click="downloadImage('#image')" type="button" v-if="svg" value="download">
-    </div>
+    <CompositeImageDisplay
+      :background="backgroundPatterns[backgroundPattern]"
+      :image="image"
+      :threshold="threshold"
+      :width="width"
+      :height="height"
+    />
 
   </div>
 </template>
 
 <script>
+import GridLoader from 'vue-spinner/src/GridLoader'
 import TrianglesDisplay from '../components/TrianglesDisplay.vue'
 import RoughDisplay from '../components/RoughDisplay.vue'
+import CompositeImageDisplay from '../components/CompositeImageDisplay.vue'
 import { getSeed } from '../utils'
-import potrace from 'potrace'
 import Jimp from 'jimp'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'home',
@@ -140,34 +147,33 @@ export default {
       blobUrl: null,
       image: null,
       svg: null,
-      backgroundPattern: 'stockTriangles',
+      backgroundPattern: 'triangle',
       backgroundPatterns: {
-        stockTriangles: '#trianglesPattern',
-        stockRough: '#roughPattern'
+        triangle: null,
+        rough: null
       }
     }
   },
   components: {
     TrianglesDisplay,
-    RoughDisplay
+    RoughDisplay,
+    CompositeImageDisplay,
+    GridLoader
   },
 
   computed: {
-    background () {
-      return this.backgroundPatterns[this.backgroundPattern]
-    }
+    ...mapState(['loading'])
   },
 
   methods: {
+    ...mapActions(['enableLoader', 'disableLoader']),
+
     regenerateSeed () {
       this.seed = getSeed()
     },
 
-    createUrl (object, mime = 'image/svg+xml') {
-      return window.URL.createObjectURL(new Blob([object], { type: mime }))
-    },
-
     loadFile (event) {
+      this.enableLoader()
       const fileReader = new FileReader()
       fileReader.addEventListener('load', (e) => {
         Jimp.read(e.target.result)
@@ -177,100 +183,26 @@ export default {
             this.width = resizedImage.getWidth()
 
             this.image = resizedImage
+            this.disableLoader()
           })
       })
       fileReader.readAsDataURL(event.target.files[0])
     },
 
-    updatedPattern (type, value) {
-      console.log({ type, value })
-      this.backgroundPatterns[type] = `${value}#pattern`
+    updatedTrianglesPattern (payload) {
+      this.backgroundPatterns.triangle = `${payload}#pattern`
     },
 
-    trace () {
-      if (!this.image) {
-        return null
-      }
-
-      potrace.posterize(this.image, {
-        background: `url(${this.background})`,
-        color: 'black',
-        threshold: this.threshold
-      }, (err, svg) => {
-        if (err) {
-          console.error(err)
-          return
-        }
-        this.blobUrl = this.createUrl(svg)
-        this.svg = svg
-      })
-    },
-
-    downloadImage (selector) {
-      const download = (image) => {
-        console.log('loaded image')
-        const canvas = document.createElement('canvas')
-        canvas.setAttribute('width', this.width)
-        canvas.setAttribute('height', this.height)
-        console.log('set image attrs')
-
-        const context = canvas.getContext('2d')
-
-        context.drawImage(image, 0, 0)
-        console.log('drawn in canvas')
-
-        const a = document.createElement('a')
-        a.download = 'generated_image.png'
-        a.href = canvas.toDataURL('image/png')
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        console.log('scheduled download')
-      }
-
-      if (!selector) {
-        const image = new Image()
-        console.log(image)
-        image.src = this.blobUrl
-
-        image.addEventListener('load', () => {
-          download(image)
-        })
-        return
-      }
-
-      const image = document.querySelector(selector)
-      download(image)
-    }
-  },
-  watch: {
-    background (newValue, oldValue) {
-      if (newValue === oldValue) {
-        return
-      }
-
-      this.trace()
-    },
-
-    threshold (newValue, oldValue) {
-      if (newValue === oldValue) {
-        return
-      }
-
-      this.trace()
-    },
-    image (newValue) {
-      if (!newValue) {
-        return
-      }
-
-      this.trace()
+    updatedRoughPattern (payload) {
+      this.backgroundPatterns.rough = `${payload}#pattern`
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+  @import "../style/loader";
+
   .controls {
     margin-left: auto;
     display: flex;

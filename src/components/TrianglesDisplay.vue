@@ -16,13 +16,14 @@
 
 <script>
 import Trianglify from 'trianglify'
+import { createUrl } from '../utils'
 
 export default {
   name: 'TrianglesDisplay',
   data () {
-    return {
-    }
+    return {}
   },
+
   methods: {
     generateTemplate (base) {
       const template = `
@@ -34,14 +35,10 @@ export default {
         </defs>
       </svg>`
 
-      return this.createUrl(template)
-    },
-
-    createUrl (object, mime = 'image/svg+xml') {
-      return window.URL.createObjectURL(new Blob([object], { type: mime }))
+      return createUrl(template)
     }
-
   },
+
   computed: {
     triangles () {
       console.log('recalculated triangles')
@@ -50,7 +47,6 @@ export default {
         height: this.height,
         cell_size: this.cellSize,
         seed: this.seed
-        // x_colors: 'random'
       })
 
       let svg = triangles.svg()
