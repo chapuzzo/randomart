@@ -56,7 +56,7 @@ export default {
       let svg = triangles.svg()
       let innerHTML = svg.innerHTML
 
-      this.$emit('updatedPattern', this.generateTemplate(innerHTML))
+      this.$emit('updated-pattern', this.generateTemplate(innerHTML))
       return innerHTML
     }
   },

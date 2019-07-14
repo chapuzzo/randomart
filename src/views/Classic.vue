@@ -19,7 +19,7 @@
       :height="height"
       :seed="seed"
       :width="width"
-      @updatedPattern="updatedPattern('triangle', $event)"
+      @updated-pattern="updatedPattern('triangle', $event)"
     />
     <div class="controls">
       <fieldset>
@@ -76,7 +76,7 @@
       :stroke-color="strokeColor"
       :stroke-width="strokeWidth"
       :width="width"
-      @updatedPattern="updatedPattern('rough', $event)"
+      @updated-pattern="updatedPattern('rough', $event)"
       :pattern="backgroundPatterns.stockTriangles"
     />
     <div class="controls">

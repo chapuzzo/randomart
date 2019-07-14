@@ -65,7 +65,7 @@ export default {
 
       let innerHTML = svgElement.innerHTML
 
-      this.$emit('updatedPattern', this.generateTemplate(innerHTML))
+      this.$emit('updated-pattern', this.generateTemplate(innerHTML))
       return innerHTML
     }
   },
