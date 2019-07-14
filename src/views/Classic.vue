@@ -205,7 +205,7 @@ export default {
     },
 
     downloadImage (selector) {
-      const extracted = (image) => {
+      const download = (image) => {
         console.log('loaded image')
         const canvas = document.createElement('canvas')
         canvas.setAttribute('width', this.width)
@@ -232,13 +232,13 @@ export default {
         image.src = this.blobUrl
 
         image.addEventListener('load', () => {
-          extracted(image)
+          download(image)
         })
         return
       }
 
       const image = document.querySelector(selector)
-      extracted(image)
+      download(image)
     }
   },
   watch: {
