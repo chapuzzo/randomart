@@ -1,7 +1,7 @@
 <template>
   <div>
     <template v-if="blobUrl">
-      <img :src="blobUrl" alt="" ref='image'/>
+      <img :src="blobUrl" alt="" ref='image' :style="{backgroundColor}"/>
       <div class="controls">
         <input @click="downloadImage" type="button" value="download">
       </div>
@@ -62,6 +62,10 @@ export default {
       canvas.setAttribute('width', this.width)
 
       const context = canvas.getContext('2d')
+
+      context.fillStyle = this.backgroundColor
+      context.fillRect(0, 0, this.width, this.height)
+
       context.drawImage(this.$refs.image, 0, 0)
 
       canvas.toBlob(blob => saveAs(blob, 'xxx'))
@@ -85,6 +89,7 @@ export default {
   props: {
     image: Object,
     background: String,
+    backgroundColor: String,
     threshold: Number,
     width: Number,
     height: Number

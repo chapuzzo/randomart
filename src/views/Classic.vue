@@ -91,6 +91,9 @@
           <span class="input">select</span>
           <input @change="loadFile" hidden type="file">
         </label>
+        <label>background color
+          <input type="color" v-model="backgroundColor">
+        </label>
         <label>threshold
           <input max="255" min="0" type="range" v-model.number="threshold">
         </label>
@@ -109,6 +112,7 @@
 
     <CompositeImageDisplay
       :background="backgroundPatterns[backgroundPattern]"
+      :background-color="backgroundColor"
       :image="image"
       :threshold="threshold"
       :width="width"
@@ -146,7 +150,7 @@ export default {
       threshold: 120,
       blobUrl: null,
       image: null,
-      svg: null,
+      backgroundColor: '#ffffff',
       backgroundPattern: 'triangle',
       backgroundPatterns: {
         triangle: null,
