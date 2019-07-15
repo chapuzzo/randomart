@@ -9,7 +9,6 @@
     </label>
 
     <img :src="thumb" alt="">
-    <!--    <img :src="thumbBlob" alt="">-->
     <div style="display: inline;" v-html="posterizedThumb" v-if="posterizedThumb"></div>
     <div style="display: inline;" v-html="triangles" v-if="triangles"></div>
     <div style="display: inline;" v-html="merged" v-if="merged"></div>
@@ -48,9 +47,6 @@ const posterize = (image) => {
   })
 }
 
-// const createUrl = (object, mime = 'image/svg+xml') =>
-//   window.URL.createObjectURL(new Blob([object], { type: mime }))
-
 export default {
   name: 'Editor',
   data () {
@@ -58,7 +54,6 @@ export default {
       image: null,
       thumb: null,
       posterizedThumb: null,
-      // thumbBlob: null,
       triangles: null,
       simplification: 1,
       loading: false,
@@ -77,7 +72,6 @@ export default {
       this.width = thumb.getWidth()
 
       this.thumb = await thumb.getBase64Async('image/png')
-      // this.thumbBlob = createUrl(await thumb.getBufferAsync('image/jpeg'))
 
       this.posterizedThumb = await posterize(thumb)
 
