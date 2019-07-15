@@ -2,8 +2,9 @@
   <div class="editor">
     <div class="overlay" v-if="loading">
       <GridLoader size="20px"/>
+      <span v-if="loadingMessage" class="message">{{loadingMessage}}</span>
     </div>
-    <ImageSelector :startLoading="() => {this.loading = true}" @selected="changedImage"/>
+    <ImageSelector :startLoading="enableLoader" @selected="changedImage"/>
     <label>simplification
       <input max="200" min="-100" type="range" v-model.number="simplification">
     </label>
@@ -23,6 +24,7 @@ import potrace from 'potrace'
 import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
+import { mapActions, mapState } from 'vuex'
 
 const createThumb = (image, maxSize = 150) => {
   let newDimensions = [maxSize, Jimp.AUTO]
@@ -56,25 +58,29 @@ export default {
       posterizedThumb: null,
       triangles: null,
       simplification: 1,
-      loading: false,
-      posterPaths: []
+      loadingMessage: '',
       trianglePaths: null,
       posterPaths: null
     }
   },
   methods: {
+    ...mapActions(['enableLoader', 'disableLoader']),
+
     async changedImage (image) {
-      this.loading = true
+      this.enableLoader()
       this.image = image
 
+      this.loadingMessage = 'creating thumb'
       let thumb = createThumb(image)
       this.height = thumb.getHeight()
       this.width = thumb.getWidth()
 
       this.thumb = await thumb.getBase64Async('image/png')
 
+      this.loadingMessage = 'creating posterized thumb'
       this.posterizedThumb = await posterize(thumb)
 
+      this.loadingMessage = 'creating triangles pattern'
       const triangles = Trianglify({
         height: this.height,
         width: this.width
@@ -82,16 +88,22 @@ export default {
 
       this.triangles = triangles.outerHTML
 
+      this.loadingMessage = 'merging triangles with posterized'
       const domParser = new DOMParser()
       const posterizedThumb = domParser.parseFromString(this.posterizedThumb, 'image/svg+xml')
 
+      this.loadingMessage = 'extracting paths from triangles'
       this.trianglePaths = Array.from(triangles.querySelectorAll('path'))
+
+      this.loadingMessage = 'extracting paths from posterized'
       this.posterPaths = Array.from(posterizedThumb.querySelectorAll('path'))
 
-      this.loading = false
+      this.disableLoader()
     }
   },
   computed: {
+    ...mapState(['loading']),
+
     merged () {
       if (!this.trianglePaths || !this.posterPaths) {
         return null
@@ -149,21 +161,8 @@ export default {
 
 </script>
 
-<style lang="scss">
-  .overlay {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(128, 128, 128, 0.5);
-
-    .v-spinner {
-      margin-top: 50%;
-      margin-left: 50%;
-      transform: translate(-50%, -50%);
-    }
-  }
+<style lang="scss" scoped>
+  @import '../style/loader';
 
   .input, input[type="button"] {
     display: block;
