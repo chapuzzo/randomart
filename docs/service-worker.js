@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.6a0a1df39d4639256ebd1c14028a2d36.js"
+  "precache-manifest.ca5d20c1f8d48b3baa0c6d2cf1b7b97d.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "randomart"});
