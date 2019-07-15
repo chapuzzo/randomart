@@ -87,7 +87,10 @@
     <div class="controls">
       <fieldset>
         <legend>image</legend>
-        <label>
+        <label>url
+          <input type="text" @change="loadURL($event.target.value)">
+        </label>
+        <label>file
           <span class="input">select</span>
           <input @change="loadFile" hidden type="file">
         </label>
@@ -174,6 +177,19 @@ export default {
 
     regenerateSeed () {
       this.seed = getSeed()
+    },
+
+    loadURL (url) {
+      this.enableLoader()
+      Jimp.read(url)
+        .then(loadedImage => {
+          const resizedImage = loadedImage.resize(Jimp.AUTO, 500)
+          this.height = resizedImage.getHeight()
+          this.width = resizedImage.getWidth()
+
+          this.image = resizedImage
+          this.disableLoader()
+        })
     },
 
     loadFile (event) {
