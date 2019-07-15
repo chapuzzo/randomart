@@ -68,7 +68,7 @@ export default {
 
       context.drawImage(this.$refs.image, 0, 0)
 
-      canvas.toBlob(blob => saveAs(blob, 'xxx'))
+      canvas.toBlob(blob => saveAs(blob, 'generated_image.png'))
     }
   },
 
