@@ -219,14 +219,16 @@ export default {
       label {
         display: flex;
         justify-content: flex-end;
+        align-items: center;
 
-        > input[type="color"] {
-          margin-left: 6px;
+        > input, select {
+          margin: 6px 0 6px 6px ;
         }
       }
     }
 
     .input, input[type="button"] {
+      margin: 6px 0 6px 6px ;
       display: block;
       border: 1px black solid;
       border-radius: 3px;
