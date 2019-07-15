@@ -52,7 +52,7 @@
             <option value="zigzag">zigzag</option>
             <option value="cross-hatch">cross-hatch</option>
             <option value="dots">dots</option>
-            <option value="sunburst">sunburst</option>
+            <option value="starburst">starburst</option>
             <option value="dashed">dashed</option>
             <option value="zigzag-line">zigzag-line</option>
           </select>
