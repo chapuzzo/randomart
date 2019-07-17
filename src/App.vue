@@ -6,8 +6,18 @@
       <router-link to="new">New</router-link>
     </div>
     <router-view/>
+    <footer>
+      <cookie-law theme="dark-lime--rounded"/>
+    </footer>
   </div>
 </template>
+
+<script>
+import CookieLaw from 'vue-cookie-law'
+export default {
+  components: { CookieLaw }
+}
+</script>
 
 <style lang="scss">
   body {
