@@ -9,11 +9,11 @@
       <input max="200" min="-100" type="range" v-model.number="simplification">
     </label>
 
-    <img :src="thumb" alt="">
-    <div style="display: inline;" v-html="posterizedThumb" v-if="posterizedThumb"></div>
-    <div style="display: inline;" v-html="triangles" v-if="triangles"></div>
-    <div style="display: inline;" v-html="merged" v-if="merged"></div>
-    <div style="display: inline;" v-html="traced" v-if="traced"></div>
+    <div class="step" :style="stepStyle" v-if="thumb"><img :src="thumb" alt=""></div>
+    <div class="step" :style="stepStyle" v-html="posterizedThumb" v-if="posterizedThumb"></div>
+    <div class="step" :style="stepStyle" v-html="triangles" v-if="triangles"></div>
+    <div class="step" :style="stepStyle" v-html="merged" v-if="merged"></div>
+    <div class="step" :style="stepStyle" v-html="traced" v-if="traced"></div>
   </div>
 </template>
 
@@ -26,7 +26,7 @@ import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
 
-const createThumb = (image, maxSize = 150) => {
+const createThumb = (image, maxSize = 200) => {
   let newDimensions = [maxSize, Jimp.AUTO]
 
   if (image.getWidth() < image.getHeight()) {
@@ -60,7 +60,8 @@ export default {
       simplification: 1,
       loadingMessage: '',
       trianglePaths: null,
-      posterPaths: null
+      posterPaths: null,
+      maxSize: 200
     }
   },
   methods: {
@@ -71,7 +72,7 @@ export default {
       this.image = image
 
       this.loadingMessage = 'creating thumb'
-      let thumb = createThumb(image)
+      let thumb = createThumb(image, this.maxSize)
       this.height = thumb.getHeight()
       this.width = thumb.getWidth()
 
@@ -103,6 +104,13 @@ export default {
   },
   computed: {
     ...mapState(['loading']),
+
+    stepStyle () {
+      return {
+        maxHeight: `${this.maxSize}px`,
+        maxWidth: `${this.maxSize}px`
+      }
+    },
 
     merged () {
       if (!this.trianglePaths || !this.posterPaths) {
@@ -172,4 +180,10 @@ export default {
     cursor: pointer;
     background-color: beige;
   }
+
+  .step {
+    display: block;
+    margin: 15px auto;
+  }
+
 </style>
