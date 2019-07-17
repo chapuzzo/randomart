@@ -37,6 +37,13 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
+  .input, input[type="button"] {
+    display: block;
+    border: 1px black solid;
+    border-radius: 3px;
+    padding: 5px;
+    cursor: pointer;
+    background-color: beige;
+  }
 </style>
