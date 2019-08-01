@@ -1,13 +1,13 @@
 <template>
-    <div>
-      <fieldset>
-        <legend>image</legend>
-        <label>
-          <span class="input">select</span>
-          <input @change="loadFile" hidden type="file">
-        </label>
-      </fieldset>
-    </div>
+  <div>
+    <fieldset>
+      <legend>image</legend>
+      <label>
+        <span class="input">select</span>
+        <input @change="loadFile" hidden type="file">
+      </label>
+    </fieldset>
+  </div>
 </template>
 
 <script>
