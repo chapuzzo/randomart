@@ -13,7 +13,7 @@
           <input type="text" v-model="seed"/>
         </label>
         <label>
-          <input @click="regenerateSeed" type="button" value="regen">
+          <input @click="regenerateSeed" type="button" value="regenerate">
         </label>
       </fieldset>
     </div>
