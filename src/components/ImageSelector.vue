@@ -16,22 +16,26 @@ import Jimp from 'jimp'
 export default {
   name: 'ImageSelector',
   props: {
-    startLoading: Function
+    withLoader: Function
   },
   methods: {
-    loadFile (event) {
-      if (this.startLoading) {
-        this.startLoading()
-      }
-
-      const fileReader = new FileReader()
-      fileReader.addEventListener('load', (e) => {
-        Jimp.read(e.target.result)
-          .then(loadedImage => {
-            this.$emit('selected', loadedImage)
+    async loadFile (event) {
+      const loaded = await this.withLoader(async () => {
+        return new Promise((resolve, reject) => {
+          const fileReader = new FileReader()
+          fileReader.addEventListener('load', (e) => {
+            Jimp.read(e.target.result)
+              .then(loadedImage => {
+                resolve(loadedImage)
+              })
+              .catch(error => reject(error))
           })
-      })
-      fileReader.readAsDataURL(event.target.files[0])
+
+          fileReader.readAsDataURL(event.target.files[0])
+        })
+      }, 'reading image')
+
+      this.$emit('selected', loaded)
     }
   }
 }

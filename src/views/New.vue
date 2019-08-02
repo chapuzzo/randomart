@@ -2,25 +2,39 @@
   <div class="editor">
     <div class="overlay" v-if="loading">
       <GridLoader size="20px"/>
-      <span v-if="loadingMessage" class="message">{{loadingMessage}}</span>
+      <span class="message" v-if="loadingMessage">{{loadingMessage}}</span>
     </div>
-    <ImageSelector :startLoading="enableLoader" @selected="changedImage"/>
-    <label>simplification
-      <input max="200" min="-100" type="range" v-model.number="simplification">
+
+    <ImageSelector :withLoader="withLoader" @selected="selectedImage"/>
+
+    <input @click="test" type="button" value="test">
+
+    <label class="setting">threshold
+      <input max="255" min="-1" type="range" v-model.number="threshold">
+      <span>{{threshold}}</span>
     </label>
 
-    <div class="step" :style="stepStyle" v-if="thumb"><img :src="thumb" alt=""></div>
-    <div class="step" :style="stepStyle" v-html="posterizedThumb" v-if="posterizedThumb"></div>
-    <div class="step" :style="stepStyle" v-html="triangles" v-if="triangles"></div>
-    <div class="step" :style="stepStyle" v-html="merged" v-if="merged"></div>
-    <div class="step" :style="stepStyle" v-html="traced" v-if="traced"></div>
+    <label class="setting">simplification
+      <input max="5" min="-5" type="range" v-model.number="simplification">
+      <span>{{simplification}}</span>
+    </label>
+
+    <div class="steps">
+      <div :style="stepStyle" class="step" v-if="thumbURI"><img :src="thumbURI" alt=""></div>
+      <div :style="stepStyle" class="step" v-html="posterizedThumb" v-if="posterizedThumb"></div>
+      <div :style="stepStyle" class="step" v-html="triangles" v-if="triangles"></div>
+      <div :style="stepStyle" class="step" v-html="merged" v-if="merged"></div>
+  <!--    <img v-if="merged" :src="createURL" alt="">-->
+      <div :style="stepStyle" class="step" v-html="traced" v-if="traced"></div>
+    </div>
+
   </div>
 </template>
 
 <script>
 import ImageSelector from '../components/ImageSelector'
 import Jimp from 'jimp'
-import potrace from 'potrace'
+import { Posterizer } from 'potrace'
 import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
@@ -36,8 +50,9 @@ const createThumb = (image, maxSize = 200) => {
   return image.resize(...newDimensions)
 }
 
-const posterize = (image) => {
-  const posterizer = new potrace.Posterizer()
+const posterize = (image, options) => {
+  const posterizer = new Posterizer(options)
+
   return new Promise((resolve, reject) => {
     posterizer.loadImage(image, error => {
       if (error) {
@@ -49,58 +64,184 @@ const posterize = (image) => {
   })
 }
 
+const createTriangles = ({ height, width }) => {
+  return Trianglify({
+    height,
+    width
+  }).svg()
+}
+
 export default {
   name: 'Editor',
   data () {
     return {
       image: null,
       thumb: null,
+      thumbURI: null,
       posterizedThumb: null,
       triangles: null,
-      simplification: 1,
-      loadingMessage: '',
+      loadingMessage: null,
       trianglePaths: null,
       posterPaths: null,
-      maxSize: 200
+      merged: null,
+      traced: null,
+      simplification: 1,
+      threshold: -1,
+      maxSize: 200,
+      fakeDelay: 700
     }
   },
+
+  watch: {
+    threshold () {
+      if (!this.image) {
+        return
+      }
+
+      this.$emit('changed-threshold')
+    },
+
+    simplification () {
+      if (!this.posterPaths) {
+        return
+      }
+
+      this.$emit('changed-simplification')
+    }
+  },
+
+  mounted () {
+    this.$on('changed-image', this.createTriangles)
+    this.$on('created-triangles', this.posterizeThumb)
+    this.$on('posterized-thumb', this.extractPosterPaths)
+    this.$on('extracted-poster-paths', this.mergePaths)
+    this.$on('merged-paths', this.tracePosterPaths)
+
+    this.$on('changed-threshold', this.posterizeThumb)
+    this.$on('changed-simplification', this.tracePosterPaths)
+  },
+
   methods: {
     ...mapActions(['enableLoader', 'disableLoader']),
 
-    async changedImage (image) {
-      this.enableLoader()
-      this.image = image
+    async test () {
+      await this.withLoader(async () => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            this.loadingMessage = 500
+          }, 500)
+          setTimeout(() => {
+            this.loadingMessage = 1000
+          }, 1000)
 
-      this.loadingMessage = 'creating thumb'
-      let thumb = createThumb(image, this.maxSize)
-      this.height = thumb.getHeight()
-      this.width = thumb.getWidth()
-
-      this.thumb = await thumb.getBase64Async('image/png')
-
-      this.loadingMessage = 'creating posterized thumb'
-      this.posterizedThumb = await posterize(thumb)
-
-      this.loadingMessage = 'creating triangles pattern'
-      const triangles = Trianglify({
-        height: this.height,
-        width: this.width
-      }).svg()
-
-      this.triangles = triangles.outerHTML
-
-      this.loadingMessage = 'merging triangles with posterized'
-      const domParser = new DOMParser()
-      const posterizedThumb = domParser.parseFromString(this.posterizedThumb, 'image/svg+xml')
-
-      this.loadingMessage = 'extracting paths from triangles'
-      this.trianglePaths = Array.from(triangles.querySelectorAll('path'))
-
-      this.loadingMessage = 'extracting paths from posterized'
-      this.posterPaths = Array.from(posterizedThumb.querySelectorAll('path'))
+          setTimeout(() => resolve(true), 1500)
+        })
+      }, 'test')
 
       this.disableLoader()
+    },
+
+    async withLoader (callback, message) {
+      this.enableLoader()
+      // console.log('wl> ' + message)
+      this.loadingMessage = message
+      await new Promise((resolve, reject) => {
+        setTimeout(resolve, this.fakeDelay)
+      })
+      const value = await callback()
+      // console.log('<wl ' + message)
+      this.disableLoader()
+      return value
+    },
+
+    async selectedImage (image) {
+      await this.withLoader(async () => {
+        await new Promise((resolve, reject) => {
+          setTimeout(resolve, this.fakeDelay)
+        })
+
+        this.image = image
+
+        this.thumb = createThumb(image, this.maxSize)
+        this.height = this.thumb.getHeight()
+        this.width = this.thumb.getWidth()
+
+        this.thumbURI = await this.thumb.getBase64Async('image/png')
+      }, 'creating thumb')
+      this.$emit('changed-image')
+    },
+
+    async createTriangles () {
+      await this.withLoader(async () => {
+        const triangles = createTriangles({
+          height: this.height,
+          width: this.width
+        })
+
+        this.triangles = triangles.outerHTML
+
+        this.trianglePaths = Array.from(triangles.querySelectorAll('path'))
+      }, 'creating triangles pattern')
+      this.$emit('created-triangles')
+    },
+
+    async posterizeThumb () {
+      await this.withLoader(async () => {
+        this.posterizedThumb = await posterize(this.thumb, {
+          threshold: this.threshold
+        })
+      }, 'creating posterized thumb')
+      this.$emit('posterized-thumb')
+    },
+
+    async extractPosterPaths () {
+      await this.withLoader(async () => {
+        const domParser = new DOMParser()
+        const posterizedThumb = domParser.parseFromString(this.posterizedThumb, 'image/svg+xml')
+
+        this.posterPaths = Array.from(posterizedThumb.querySelectorAll('path'))
+      }, 'extracting paths from posterized')
+      this.$emit('extracted-poster-paths')
+    },
+
+    async mergePaths () {
+      await this.withLoader(async () => {
+        const merged = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        merged.setAttribute('width', this.width)
+        merged.setAttribute('height', this.height)
+
+        this.trianglePaths.forEach(path => {
+          merged.appendChild(path)
+        })
+
+        this.posterPaths.forEach(path => {
+          merged.appendChild(path)
+        })
+
+        this.merged = merged.outerHTML
+      }, 'merging paths')
+      this.$emit('merged-paths')
+    },
+
+    async tracePosterPaths () {
+      await this.withLoader(async () => {
+        const traced = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        traced.setAttribute('width', this.width)
+        traced.setAttribute('height', this.height)
+
+        const rc = rough.svg(traced)
+        this.posterPaths.forEach(originalPath => {
+          const path = rc.path(originalPath.getAttribute('d'), {
+            simplification: this.simplification
+          })
+          traced.appendChild(path)
+        })
+
+        this.traced = traced.outerHTML
+      }, 'tracing paths')
+      this.$emit('traced-poster-paths')
     }
+
   },
   computed: {
     ...mapState(['loading']),
@@ -110,55 +251,6 @@ export default {
         maxHeight: `${this.maxSize}px`,
         maxWidth: `${this.maxSize}px`
       }
-    },
-
-    merged () {
-      if (!this.trianglePaths || !this.posterPaths) {
-        return null
-      }
-
-      const merged = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-      merged.setAttribute('width', this.width)
-      merged.setAttribute('height', this.height)
-
-      this.trianglePaths.forEach(path => {
-        merged.appendChild(path)
-      })
-
-      this.posterPaths.forEach(path => {
-        merged.appendChild(path)
-      })
-
-      return merged.outerHTML
-    },
-
-    traced () {
-      if (!this.posterPaths) {
-        return null
-      }
-
-      const traced = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-      traced.setAttribute('width', this.width)
-      traced.setAttribute('height', this.height)
-
-      const rc = rough.svg(traced)
-      // const roughPosterPaths = posterPaths.map(path => rc.path(path.getAttribute('d'), {
-      //   simplification: this.simplification
-      // }))
-      //
-      // roughPosterPaths.forEach(path => {
-      //   traced.appendChild(path)
-      // })
-      //
-      this.posterPaths.forEach(originalPath => {
-        const path = rc.path(originalPath.getAttribute('d'), {
-          simplification: this.simplification
-        })
-        console.log({ path, originalPath })
-        traced.appendChild(path)
-      })
-
-      return traced.outerHTML
     }
   },
   components: {
@@ -181,9 +273,27 @@ export default {
     background-color: beige;
   }
 
-  .step {
+  .setting {
+    padding: 10px;
+    display: inline-flex;
+    align-items: center;
+
+    span {
+      padding: {
+        left: 15px;
+        right: 15px;
+      };
+    }
+  }
+
+  .steps {
     display: block;
-    margin: 15px auto;
+    padding: 15px;
+
+    .step {
+      display: inline;
+      margin: 15px auto;
+    }
   }
 
 </style>
