@@ -7,8 +7,6 @@
 
     <ImageSelector :withLoader="withLoader" @selected="selectedImage"/>
 
-    <input @click="test" type="button" value="test">
-
     <label class="setting">threshold
       <input max="255" min="-1" type="range" v-model.number="threshold">
       <span>{{threshold}}</span>
@@ -123,23 +121,6 @@ export default {
 
   methods: {
     ...mapActions(['enableLoader', 'disableLoader']),
-
-    async test () {
-      await this.withLoader(async () => {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            this.loadingMessage = 500
-          }, 500)
-          setTimeout(() => {
-            this.loadingMessage = 1000
-          }, 1000)
-
-          setTimeout(() => resolve(true), 1500)
-        })
-      }, 'test')
-
-      this.disableLoader()
-    },
 
     async withLoader (callback, message) {
       this.enableLoader()
