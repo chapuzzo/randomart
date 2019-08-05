@@ -19,7 +19,7 @@ export default new Router({
     },
     {
       path: '*',
-      redirect: 'classic'
+      redirect: 'new'
     }
   ]
 })
