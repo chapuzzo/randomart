@@ -20,6 +20,18 @@
       </label>
     </fieldset>
 
+    <fieldset>
+      <legend>background</legend>
+      <label class="setting">color
+        <input type="color" v-model="backgroundColor">
+      </label>
+
+      <label class="setting">opacity
+        <input max="1" min="0" step="0.1" type="range" v-model.number="backgroundOpacity">
+        <span>{{backgroundOpacity}}</span>
+      </label>
+    </fieldset>
+
     <div class="steps">
       <div :style="stepStyle" class="step" v-if="thumbURI"><img :src="thumbURI" alt=""></div>
       <div :style="stepStyle" class="step" v-html="posterizedThumb" v-if="posterizedThumb"></div>
@@ -40,6 +52,7 @@ import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
+import colorString from 'color-string'
 
 const createThumb = (image, maxSize = 200) => {
   let newDimensions = [maxSize, Jimp.AUTO]
@@ -97,7 +110,9 @@ export default {
       posterPaths: null,
       merged: null,
       traced: null,
-      simplification: 1,
+      backgroundColor: '#ffffff',
+      backgroundOpacity: 1,
+      simplification: 0,
       threshold: -1,
       maxSize: 200,
       fakeDelay: 700
@@ -235,10 +250,16 @@ export default {
   computed: {
     ...mapState(['loading']),
 
+    bgColor () {
+      const [r, g, b] = colorString.get.rgb(this.backgroundColor)
+      return colorString.to.hex([r, g, b], this.backgroundOpacity)
+    },
+
     stepStyle () {
       return {
         maxHeight: `${this.maxSize}px`,
-        maxWidth: `${this.maxSize}px`
+        maxWidth: `${this.maxSize}px`,
+        backgroundColor: this.bgColor
       }
     }
   },

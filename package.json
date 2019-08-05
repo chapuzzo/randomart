@@ -10,6 +10,7 @@
     "deploy": "npm run build && git add -A docs && git commit -m 'rebuilt assets' && git push"
   },
   "dependencies": {
+    "color-string": "^1.5.3",
     "core-js": "^2.6.5",
     "file-saver": "^2.0.2",
     "jimp": "^0.6.4",
