@@ -33,12 +33,38 @@
     </fieldset>
 
     <div class="steps">
-      <div :style="stepStyle" class="step" v-if="thumbURI"><img :src="thumbURI" alt=""></div>
-      <div :style="stepStyle" class="step" v-html="posterizedThumb" v-if="posterizedThumb"></div>
-      <div :style="stepStyle" class="step" v-html="triangles" v-if="triangles"></div>
-      <div :style="stepStyle" class="step" v-html="merged" v-if="merged"></div>
-  <!--    <img v-if="merged" :src="createURL" alt="">-->
-      <div :style="stepStyle" class="step" v-html="traced" v-if="traced"></div>
+      <div
+        :style="stepStyle"
+        @click="stepDownload(thumbURI, true)"
+        class="step"
+        v-if="thumbURI"
+      >
+        <img :src="thumbURI" alt="">
+      </div>
+      <div
+        :style="stepStyle"
+        @click="stepDownload(triangles)"
+        class="step"
+        v-html="triangles"
+      ></div>
+      <div
+        :style="stepStyle"
+        @click="stepDownload(posterizedThumb)"
+        class="step"
+        v-html="posterizedThumb"
+      ></div>
+      <div
+        :style="stepStyle"
+        @click="stepDownload(merged)"
+        class="step"
+        v-html="merged"
+      ></div>
+      <div
+        :style="stepStyle"
+        @click="stepDownload(traced)"
+        class="step"
+        v-html="traced"
+      ></div>
     </div>
 
   </div>
@@ -52,6 +78,8 @@ import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
+import { createUrl } from '../utils'
+import { saveAs } from 'file-saver'
 import colorString from 'color-string'
 
 const createThumb = (image, maxSize = 200) => {
@@ -82,7 +110,7 @@ const createTriangles = ({ height, width }) => {
   return Trianglify({
     height,
     width
-  }).svg()
+  }).svg({ includeNamespace: true })
 }
 
 function createSizedSVG (width, height) {
@@ -244,8 +272,28 @@ export default {
         this.traced = traced.outerHTML
       }, 'tracing paths')
       this.$emit('traced-poster-paths')
-    }
+    },
 
+    stepDownload (src, dataURI = false) {
+      const image = new Image()
+      image.src = dataURI ? src : createUrl(src)
+      image.addEventListener('load', () => {
+        const canvas = document.createElement('canvas')
+        canvas.setAttribute('height', this.height)
+        canvas.setAttribute('width', this.width)
+
+        const context = canvas.getContext('2d')
+
+        context.fillStyle = this.backgroundColor
+        context.globalAlpha = this.backgroundOpacity
+        context.fillRect(0, 0, this.width, this.height)
+        context.globalAlpha = 1
+
+        context.drawImage(image, 0, 0)
+
+        canvas.toBlob(blob => saveAs(blob, 'traced.png'))
+      })
+    }
   },
   computed: {
     ...mapState(['loading']),
@@ -301,9 +349,8 @@ export default {
     padding: 15px;
 
     .step {
-      display: inline;
-      margin: 15px auto;
+      display: inline-block;
+      margin: 15px;
     }
   }
-
 </style>
