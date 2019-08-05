@@ -129,10 +129,12 @@ export default {
       this.enableLoader()
       // console.log('wl> ' + message)
       this.loadingMessage = message
-      await new Promise((resolve, reject) => {
-        setTimeout(resolve, this.fakeDelay)
-      })
-      const value = await callback()
+      const [, value] = await Promise.all([
+        new Promise((resolve, reject) => {
+          setTimeout(resolve, this.fakeDelay)
+        }),
+        callback()
+      ])
       // console.log('<wl ' + message)
       this.disableLoader()
       return value
