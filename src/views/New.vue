@@ -7,15 +7,18 @@
 
     <ImageSelector :withLoader="withLoader" @selected="selectedImage"/>
 
-    <label class="setting">threshold
-      <input max="255" min="-1" type="range" v-model.number="threshold">
-      <span>{{threshold}}</span>
-    </label>
+    <fieldset>
+      <legend>trace options</legend>
+      <label class="setting">threshold
+        <input max="255" min="-1" type="range" v-model.number="threshold">
+        <span>{{threshold}}</span>
+      </label>
 
-    <label class="setting">simplification
-      <input max="5" min="-5" type="range" v-model.number="simplification">
-      <span>{{simplification}}</span>
-    </label>
+      <label class="setting">simplification
+        <input max="5" min="-5" type="range" v-model.number="simplification">
+        <span>{{simplification}}</span>
+      </label>
+    </fieldset>
 
     <div class="steps">
       <div :style="stepStyle" class="step" v-if="thumbURI"><img :src="thumbURI" alt=""></div>
