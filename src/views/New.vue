@@ -72,6 +72,17 @@ const createTriangles = ({ height, width }) => {
   }).svg()
 }
 
+function createSizedSVG (width, height) {
+  const namespaceURI = 'http://www.w3.org/2000/svg'
+  const svg = document.createElementNS(namespaceURI, 'svg')
+  svg.setAttribute('xmlns', namespaceURI)
+
+  svg.setAttribute('width', width)
+  svg.setAttribute('height', height)
+
+  return svg
+}
+
 export default {
   name: 'Editor',
   data () {
@@ -188,9 +199,7 @@ export default {
 
     async mergePaths () {
       await this.withLoader(async () => {
-        const merged = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-        merged.setAttribute('width', this.width)
-        merged.setAttribute('height', this.height)
+        const merged = createSizedSVG(this.width, this.height)
 
         this.trianglePaths.forEach(path => {
           merged.appendChild(path)
@@ -207,9 +216,7 @@ export default {
 
     async tracePosterPaths () {
       await this.withLoader(async () => {
-        const traced = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-        traced.setAttribute('width', this.width)
-        traced.setAttribute('height', this.height)
+        const traced = createSizedSVG(this.width, this.height)
 
         const rc = rough.svg(traced)
         this.posterPaths.forEach(originalPath => {
