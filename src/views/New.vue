@@ -140,10 +140,6 @@ export default {
 
     async selectedImage (image) {
       await this.withLoader(async () => {
-        await new Promise((resolve, reject) => {
-          setTimeout(resolve, this.fakeDelay)
-        })
-
         this.image = image
 
         this.thumb = createThumb(image, this.maxSize)
