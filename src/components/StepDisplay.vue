@@ -1,18 +1,19 @@
 <template>
-  <div
-    @click="download(src, true)"
-    class="step"
-    v-if="uri"
-  >
-    <img :src="src" alt="">
-  </div>
+  <div class="step" v-if="src">
+    <div
+      :style="imageStyle"
+      v-if="uri"
+    >
+      <img :src="src" alt="">
+    </div>
 
-  <div
-    @click="download(src)"
-    class="step"
-    v-else
-    v-html="src"
-  ></div>
+    <div
+      :style="imageStyle"
+      v-else
+      v-html="src"
+    ></div>
+    <span class="input" @click="download(src, uri)">↓ download</span>
+  </div>
 </template>
 
 <script>
@@ -22,6 +23,7 @@ export default {
   props: {
     src: String,
     download: Function,
+    imageStyle: Object,
     uri: {
       type: Boolean,
       default: false
@@ -34,5 +36,15 @@ export default {
   .step {
     display: inline-block;
     margin: 15px;
+  }
+
+  .input, input[type="button"] {
+    margin-top: 10px;
+    display: block;
+    border: 1px black solid;
+    border-radius: 3px;
+    padding: 5px;
+    cursor: pointer;
+    background-color: beige;
   }
 </style>

@@ -35,32 +35,32 @@
     <div class="steps">
       <StepDisplay
         :src="thumbURI"
-        :style="stepStyle"
+        :imageStyle="stepStyle"
         :download="stepDownload"
         :uri="true"
       />
 
       <StepDisplay
         :src="triangles"
-        :style="stepStyle"
+        :imageStyle="stepStyle"
         :download="stepDownload"
       />
 
       <StepDisplay
         :src="posterizedThumb"
-        :style="stepStyle"
+        :imageStyle="stepStyle"
         :download="stepDownload"
       />
 
       <StepDisplay
         :src="merged"
-        :style="stepStyle"
+        :imageStyle="stepStyle"
         :download="stepDownload"
       />
 
       <StepDisplay
         :src="traced"
-        :style="stepStyle"
+        :imageStyle="stepStyle"
         :download="stepDownload"
       />
     </div>
@@ -304,8 +304,8 @@ export default {
 
     stepStyle () {
       return {
-        maxHeight: `${this.maxSize}px`,
-        maxWidth: `${this.maxSize}px`,
+        height: `${this.maxSize}px`,
+        width: `${this.maxSize}px`,
         backgroundColor: this.bgColor
       }
     }
