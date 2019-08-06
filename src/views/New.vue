@@ -33,38 +33,36 @@
     </fieldset>
 
     <div class="steps">
-      <div
+      <StepDisplay
+        :src="thumbURI"
         :style="stepStyle"
-        @click="stepDownload(thumbURI, true)"
-        class="step"
-        v-if="thumbURI"
-      >
-        <img :src="thumbURI" alt="">
-      </div>
-      <div
+        :download="stepDownload"
+        :uri="true"
+      />
+
+      <StepDisplay
+        :src="triangles"
         :style="stepStyle"
-        @click="stepDownload(triangles)"
-        class="step"
-        v-html="triangles"
-      ></div>
-      <div
+        :download="stepDownload"
+      />
+
+      <StepDisplay
+        :src="posterizedThumb"
         :style="stepStyle"
-        @click="stepDownload(posterizedThumb)"
-        class="step"
-        v-html="posterizedThumb"
-      ></div>
-      <div
+        :download="stepDownload"
+      />
+
+      <StepDisplay
+        :src="merged"
         :style="stepStyle"
-        @click="stepDownload(merged)"
-        class="step"
-        v-html="merged"
-      ></div>
-      <div
+        :download="stepDownload"
+      />
+
+      <StepDisplay
+        :src="traced"
         :style="stepStyle"
-        @click="stepDownload(traced)"
-        class="step"
-        v-html="traced"
-      ></div>
+        :download="stepDownload"
+      />
     </div>
 
   </div>
@@ -72,6 +70,7 @@
 
 <script>
 import ImageSelector from '../components/ImageSelector'
+import StepDisplay from '../components/StepDisplay'
 import Jimp from 'jimp'
 import { Posterizer } from 'potrace'
 import Trianglify from 'trianglify'
@@ -313,6 +312,7 @@ export default {
   },
   components: {
     ImageSelector,
+    StepDisplay,
     GridLoader
   }
 }
@@ -347,10 +347,5 @@ export default {
   .steps {
     display: block;
     padding: 15px;
-
-    .step {
-      display: inline-block;
-      margin: 15px;
-    }
   }
 </style>
