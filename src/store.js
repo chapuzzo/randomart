@@ -5,19 +5,19 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    loading: false
+    loading: 0
   },
   mutations: {
     changeLoading (state, value) {
-      state.loading = Boolean(value)
+      state.loading += value
     }
   },
   actions: {
     enableLoader (context) {
-      context.commit('changeLoading', true)
+      context.commit('changeLoading', 1)
     },
     disableLoader (context) {
-      context.commit('changeLoading', false)
+      context.commit('changeLoading', -1)
     }
   }
 })
