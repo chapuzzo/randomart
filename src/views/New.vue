@@ -304,8 +304,8 @@ export default {
 
     stepStyle () {
       return {
-        height: `${this.maxSize}px`,
-        width: `${this.maxSize}px`,
+        height: `${this.height}px`,
+        width: `${this.width}px`,
         backgroundColor: this.bgColor
       }
     }
