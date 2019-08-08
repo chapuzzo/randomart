@@ -47,6 +47,12 @@
       />
 
       <StepDisplay
+        :src="tracedTriangles"
+        :imageStyle="stepStyle"
+        :download="stepDownload"
+      />
+
+      <StepDisplay
         :src="posterizedThumb"
         :imageStyle="stepStyle"
         :download="stepDownload"
@@ -137,6 +143,7 @@ export default {
       posterPaths: null,
       merged: null,
       traced: null,
+      tracedTriangles: null,
       backgroundColor: '#ffffff',
       backgroundOpacity: 1,
       simplification: 0,
@@ -167,6 +174,7 @@ export default {
   mounted () {
     this.$on('changed-image', this.createTriangles)
     this.$on('created-triangles', this.posterizeThumb)
+    this.$on('created-triangles', this.traceTriangles)
     this.$on('posterized-thumb', this.extractPosterPaths)
     this.$on('extracted-poster-paths', this.mergePaths)
     this.$on('merged-paths', this.tracePosterPaths)
@@ -218,6 +226,35 @@ export default {
         this.trianglePaths = Array.from(triangles.querySelectorAll('path'))
       }, 'creating triangles pattern')
       this.$emit('created-triangles')
+    },
+
+    async traceTriangles () {
+      await this.withLoader(async () => {
+        const triangles = Trianglify({
+          height: this.height,
+          width: this.width
+        })
+
+        const traced = createSizedSVG(this.width, this.height)
+
+        const rc = rough.svg(traced)
+
+        triangles.polys.forEach(([color, points]) => {
+          const polygon = rc.polygon(points, {
+            stroke: color,
+            roughness: 3,
+            fillStyle: 'hachure',
+            fill: color,
+            hachureAngle: Math.random() * 360
+            // strokeWidth: Math.random() * 8
+          })
+
+          traced.appendChild(polygon)
+        })
+
+        this.tracedTriangles = traced.outerHTML
+      }, 'tracing triangles')
+      this.$emit('traced-triangles')
     },
 
     async posterizeThumb () {
