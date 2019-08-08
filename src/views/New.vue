@@ -69,6 +69,12 @@
         :imageStyle="stepStyle"
         :download="stepDownload"
       />
+
+      <StepDisplay
+        :src="roughTraced"
+        :imageStyle="stepStyle"
+        :download="stepDownload"
+      />
     </div>
 
   </div>
@@ -144,6 +150,7 @@ export default {
       merged: null,
       traced: null,
       tracedTriangles: null,
+      roughTraced: null,
       backgroundColor: '#ffffff',
       backgroundOpacity: 1,
       simplification: 0,
@@ -177,10 +184,12 @@ export default {
     this.$on('created-triangles', this.traceTriangles)
     this.$on('posterized-thumb', this.extractPosterPaths)
     this.$on('extracted-poster-paths', this.mergePaths)
+    this.$on('extracted-poster-paths', this.roughifyPosterPaths)
     this.$on('merged-paths', this.tracePosterPaths)
 
     this.$on('changed-threshold', this.posterizeThumb)
     this.$on('changed-simplification', this.tracePosterPaths)
+    this.$on('changed-simplification', this.roughifyPosterPaths)
   },
 
   methods: {
@@ -308,6 +317,45 @@ export default {
         this.traced = traced.outerHTML
       }, 'tracing paths')
       this.$emit('traced-poster-paths')
+    },
+
+    async roughifyPosterPaths () {
+      const polygonFill = () => ({
+        fillStyle: 'hachure',
+        // roughness: 3,
+        hachureAngle: Math.random() * 360,
+        fill: '#' + Math.floor(Math.random() * 16777215).toString(16)
+        // strokeWidth: Math.random() * 3 + 0.1
+      })
+
+      await this.withLoader(async () => {
+        const traced = createSizedSVG(this.width, this.height)
+
+        const rc = rough.svg(traced)
+
+        const bg = rc.polygon([
+          [0, 0],
+          [0, this.height],
+          [this.width, this.height],
+          [this.width, 0],
+          [0, 0]
+        ], {
+          ...polygonFill()
+        })
+
+        traced.appendChild(bg)
+
+        this.posterPaths.forEach(originalPath => {
+          const path = rc.path(originalPath.getAttribute('d'), {
+            simplification: this.simplification,
+            ...polygonFill()
+          })
+          traced.appendChild(path)
+        })
+
+        this.roughTraced = traced.outerHTML
+      }, 'roughing paths')
+      this.$emit('roughed-poster-paths')
     },
 
     stepDownload (src, dataURI = false) {
