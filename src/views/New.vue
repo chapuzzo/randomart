@@ -18,6 +18,11 @@
         <input max="5" min="-5" type="range" v-model.number="simplification">
         <span>{{simplification}}</span>
       </label>
+
+      <label class="setting">max size
+        <input max="100" min="1000" type="range" v-model.number="maxSize">
+        <span>{{maxSize}}</span>
+      </label>
     </fieldset>
 
     <fieldset>
@@ -151,11 +156,13 @@ export default {
       traced: null,
       tracedTriangles: null,
       roughTraced: null,
+      height: null,
+      width: null,
       backgroundColor: '#ffffff',
       backgroundOpacity: 1,
       simplification: 0,
       threshold: -1,
-      maxSize: 200,
+      maxSize: 500,
       fakeDelay: 700
     }
   },
@@ -169,6 +176,14 @@ export default {
       this.$emit('changed-threshold')
     },
 
+    maxSize () {
+      if (!this.image) {
+        return
+      }
+
+      this.$emit('changed-maxSize')
+    },
+
     simplification () {
       if (!this.posterPaths) {
         return
@@ -179,6 +194,7 @@ export default {
   },
 
   mounted () {
+    this.$on('changed-maxSize', () => this.selectedImage(this.image))
     this.$on('changed-image', this.createTriangles)
     this.$on('created-triangles', this.posterizeThumb)
     this.$on('created-triangles', this.traceTriangles)
