@@ -94,9 +94,12 @@ import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
-import { createUrl } from '../utils'
+import { createUrl, cycle } from '../utils'
 import { saveAs } from 'file-saver'
 import colorString from 'color-string'
+import pixels from 'image-pixels'
+import palette from 'image-palette'
+import * as _ from 'lodash'
 
 const createThumb = (image, maxSize = 200) => {
   let newDimensions = [maxSize, Jimp.AUTO]
@@ -105,7 +108,7 @@ const createThumb = (image, maxSize = 200) => {
     newDimensions.reverse()
   }
 
-  return image.resize(...newDimensions)
+  return image.clone().resize(...newDimensions)
 }
 
 const posterize = (image, options) => {
@@ -336,12 +339,24 @@ export default {
     },
 
     async roughifyPosterPaths () {
+      const imagePixels = await pixels(this.thumbURI)
+      const imagePalette = palette(imagePixels, 15)
+
+      const colorGenerator = cycle(imagePalette.colors)
+      const getColor = () => colorString.to.hex(colorGenerator())
+
+      // console.log(imagePalette.colors.map(colorString.to.hex))
+
+      // imagePalette.colors.forEach(color => {
+      //   console.log(`%c ${color}`, `color: ${colorString.to.hex(color)};`)
+      // })
+
       const polygonFill = () => ({
         fillStyle: 'hachure',
         // roughness: 3,
+        stroke: 'transparent',
         hachureAngle: Math.random() * 360,
-        fill: '#' + Math.floor(Math.random() * 16777215).toString(16)
-        // strokeWidth: Math.random() * 3 + 0.1
+        fill: getColor()
       })
 
       await this.withLoader(async () => {
@@ -349,23 +364,28 @@ export default {
 
         const rc = rough.svg(traced)
 
-        const bg = rc.polygon([
-          [0, 0],
-          [0, this.height],
-          [this.width, this.height],
-          [this.width, 0],
-          [0, 0]
-        ], {
-          ...polygonFill()
-        })
-
-        traced.appendChild(bg)
+        // const bg = rc.polygon([
+        //   [0, 0],
+        //   [0, this.height],
+        //   [this.width, this.height],
+        //   [this.width, 0],
+        //   [0, 0]
+        // ], {
+        //   ...polygonFill()
+        // })
+        // traced.appendChild(bg)
 
         this.posterPaths.forEach(originalPath => {
           const path = rc.path(originalPath.getAttribute('d'), {
             simplification: this.simplification,
             ...polygonFill()
           })
+          originalPath.removeAttribute('style')
+          // originalPath.removeAttribute('fill')
+          originalPath.setAttribute('fill', 'none')
+          originalPath.setAttribute('stroke', 'black')
+          originalPath.setAttribute('stroke-width', 0.5)
+          traced.appendChild(originalPath)
           traced.appendChild(path)
         })
 
