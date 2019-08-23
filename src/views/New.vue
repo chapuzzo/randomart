@@ -45,6 +45,23 @@
         :uri="true"
       />
 
+      <div
+        class="step"
+        v-if="palette"
+      >
+        <div
+          :key="color"
+          :style="{
+            display: 'inline-block',
+            width: '25px',
+            height: '25px',
+            margin: '6px',
+            backgroundColor: color
+          }"
+          v-for="color in palette">
+        </div>
+      </div>
+
       <StepDisplay
         :download="stepDownload"
         :imageStyle="stepStyle"
@@ -161,6 +178,7 @@ export default {
       roughTraced: null,
       height: null,
       width: null,
+      palette: null,
       backgroundColor: '#ffffff',
       backgroundOpacity: 1,
       simplification: 0,
@@ -199,7 +217,7 @@ export default {
   mounted () {
     this.$on('changed-maxSize', () => this.selectedImage(this.image))
     this.$on('changed-image', this.createTriangles)
-    this.$on('created-triangles', this.posterizeThumb)
+    this.$on('changed-image', this.extractPalette)
     this.$on('created-triangles', this.traceTriangles)
     this.$on('posterized-thumb', this.extractPosterPaths)
     this.$on('extracted-poster-paths', this.mergePaths)
@@ -338,18 +356,22 @@ export default {
       this.$emit('traced-poster-paths')
     },
 
+    async extractPalette () {
+      await this.withLoader(async () => {
+        const imagePixels = await pixels(this.thumbURI)
+        const imagePalette = palette(imagePixels)
+
+        this.palette = imagePalette.colors.map(color => {
+          const hex = colorString.to.hex(color)
+          console.log(`%c ${color}`, `color: ${hex};`)
+          return hex
+        })
+      }, 'extracting palette')
+      this.$emit('extracted-palette')
+    },
+
     async roughifyPosterPaths () {
-      const imagePixels = await pixels(this.thumbURI)
-      const imagePalette = palette(imagePixels, 15)
-
-      const colorGenerator = cycle(imagePalette.colors)
-      const getColor = () => colorString.to.hex(colorGenerator())
-
-      // console.log(imagePalette.colors.map(colorString.to.hex))
-
-      // imagePalette.colors.forEach(color => {
-      //   console.log(`%c ${color}`, `color: ${colorString.to.hex(color)};`)
-      // })
+      const getColor = cycle(this.palette)
 
       const polygonFill = () => ({
         fillStyle: 'hachure',
