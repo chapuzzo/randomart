@@ -116,7 +116,6 @@ import { saveAs } from 'file-saver'
 import colorString from 'color-string'
 import pixels from 'image-pixels'
 import palette from 'image-palette'
-import * as _ from 'lodash'
 
 const createThumb = (image, maxSize = 200) => {
   let newDimensions = [maxSize, Jimp.AUTO]
