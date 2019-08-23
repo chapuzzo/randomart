@@ -39,46 +39,46 @@
 
     <div class="steps">
       <StepDisplay
-        :src="thumbURI"
-        :imageStyle="stepStyle"
         :download="stepDownload"
+        :imageStyle="stepStyle"
+        :src="thumbURI"
         :uri="true"
       />
 
       <StepDisplay
+        :download="stepDownload"
+        :imageStyle="stepStyle"
         :src="triangles"
-        :imageStyle="stepStyle"
-        :download="stepDownload"
       />
 
       <StepDisplay
+        :download="stepDownload"
+        :imageStyle="stepStyle"
         :src="tracedTriangles"
-        :imageStyle="stepStyle"
-        :download="stepDownload"
       />
 
       <StepDisplay
+        :download="stepDownload"
+        :imageStyle="stepStyle"
         :src="posterizedThumb"
-        :imageStyle="stepStyle"
-        :download="stepDownload"
       />
 
       <StepDisplay
+        :download="stepDownload"
+        :imageStyle="stepStyle"
         :src="merged"
-        :imageStyle="stepStyle"
-        :download="stepDownload"
       />
 
       <StepDisplay
+        :download="stepDownload"
+        :imageStyle="stepStyle"
         :src="traced"
-        :imageStyle="stepStyle"
-        :download="stepDownload"
       />
 
       <StepDisplay
-        :src="roughTraced"
-        :imageStyle="stepStyle"
         :download="stepDownload"
+        :imageStyle="stepStyle"
+        :src="roughTraced"
       />
     </div>
 
