@@ -20,7 +20,7 @@
       </label>
 
       <label class="setting">max size
-        <input max="100" min="1000" type="range" v-model.number="maxSize">
+        <input max="1000" min="100" type="range" v-model.number="maxSize">
         <span>{{maxSize}}</span>
       </label>
     </fieldset>
