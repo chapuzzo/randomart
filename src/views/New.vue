@@ -46,16 +46,13 @@
       />
 
       <div
-        class="step"
+        class="palette"
         v-if="palette"
       >
         <div
+          class="color"
           :key="color"
           :style="{
-            display: 'inline-block',
-            width: '25px',
-            height: '25px',
-            margin: '6px',
             backgroundColor: color
           }"
           v-for="color in palette">
@@ -489,5 +486,18 @@ export default {
   .steps {
     display: block;
     padding: 15px;
+
+    .palette {
+      display: block;
+      margin: 15px;
+
+      .color  {
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        margin: 6px;
+        border: 1px black solid;
+      }
+    }
   }
 </style>
