@@ -55,11 +55,12 @@ const createPoint = (coords) => {
 
 const getColorAt = (coords, image) => {
   const color = image.getPixelColor(coords.x, coords.y)
-  console.log(color)
+
   const r = (color >> 24) & 0xff
   const g = (color >> 16) & 0xff
   const b = (color >> 8) & 0xff
   const a = (color >> 0) & 0xff
+
   const hex = colorString.to.hex(r, g, b, a)
 
   return hex
@@ -85,7 +86,6 @@ export function getColorInBounds (path, image, svg, debug = false) {
       x: bbox.x + Math.random() * bbox.width,
       y: bbox.y + Math.random() * bbox.height
     })
-    console.log(point)
 
     return point
   }
@@ -101,9 +101,9 @@ export function getColorInBounds (path, image, svg, debug = false) {
   const color = getColorAt(point, image)
   if (debug) {
     addColouredPointAt(point, color, svg, true)
+    console.log(`%c ${color}`, `color: ${color};`)
   }
 
-  console.log(`%c ${color}`, `color: ${color};`)
 
   return color
 }

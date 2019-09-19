@@ -362,7 +362,7 @@ export default {
 
         this.palette = imagePalette.colors.map(color => {
           const hex = colorString.to.hex(color)
-          console.log(`%c ${color}`, `color: ${hex};`)
+
           return hex
         })
       }, 'extracting palette')
