@@ -108,7 +108,7 @@ import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
-import { createUrl, cycle } from '../utils'
+import { createUrl, cycle, getColorInBounds } from '../utils'
 import { saveAs } from 'file-saver'
 import colorString from 'color-string'
 import pixels from 'image-pixels'
@@ -369,12 +369,13 @@ export default {
     async roughifyPosterPaths () {
       const getColor = cycle(this.palette)
 
-      const polygonFill = () => ({
+      const polygonFill = (options = {}) => ({
         fillStyle: 'hachure',
-        // roughness: 3,
+        roughness: 3,
         stroke: 'transparent',
         hachureAngle: Math.random() * 360,
-        fill: getColor()
+        fill: getColor(),
+        ...options
       })
 
       await this.withLoader(async () => {
@@ -394,14 +395,18 @@ export default {
         // traced.appendChild(bg)
 
         this.posterPaths.forEach(originalPath => {
-          const path = rc.path(originalPath.getAttribute('d'), {
+          const polygonPath = originalPath.getAttribute('d').replace(/,\s+/g, ',')
+          const color = getColorInBounds(originalPath, this.thumb, traced)
+
+          const path = rc.path(polygonPath, {
             simplification: this.simplification,
-            ...polygonFill()
+            ...polygonFill({ fill: `${color}` })
           })
+
           originalPath.removeAttribute('style')
-          // originalPath.removeAttribute('fill')
           originalPath.setAttribute('fill', 'none')
           originalPath.setAttribute('stroke', getColor())
+          originalPath.setAttribute('stroke', color)
           originalPath.setAttribute('stroke-width', 1)
           traced.appendChild(originalPath)
           traced.appendChild(path)
