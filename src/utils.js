@@ -78,7 +78,7 @@ const addColouredPointAt = (coords, color, svg, stroke = false) => {
   svg.appendChild(point)
 }
 
-export function getColorInBounds (path, image, svg, debug = false) {
+export const getColorInBounds = (path, image, svg, debug = false) => {
   const bbox = getBBox(path)
 
   const getPoint = () => {
