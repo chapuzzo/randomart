@@ -104,6 +104,5 @@ export const getColorInBounds = (path, image, svg, debug = false) => {
     console.log(`%c ${color}`, `color: ${color};`)
   }
 
-
   return color
 }
