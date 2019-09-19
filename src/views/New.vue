@@ -386,6 +386,8 @@ export default {
 
         const rc = rough.svg(traced)
 
+        // background for "empty" images
+        //
         // const bg = rc.polygon([
         //   [0, 0],
         //   [0, this.height],
