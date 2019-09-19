@@ -212,13 +212,16 @@ export default {
 
   mounted () {
     this.$on('changed-maxSize', () => this.selectedImage(this.image))
-    this.$on('changed-image', this.createTriangles)
+
+    this.$on('changed-image', this.posterizeThumb)
     this.$on('changed-image', this.extractPalette)
-    this.$on('created-triangles', this.traceTriangles)
+    this.$on('changed-image', this.createTriangles)
+
     this.$on('posterized-thumb', this.extractPosterPaths)
+
     this.$on('extracted-poster-paths', this.mergePaths)
+    this.$on('extracted-poster-paths', this.tracePosterPaths)
     this.$on('extracted-poster-paths', this.roughifyPosterPaths)
-    this.$on('merged-paths', this.tracePosterPaths)
 
     this.$on('changed-threshold', this.posterizeThumb)
     this.$on('changed-simplification', this.tracePosterPaths)
