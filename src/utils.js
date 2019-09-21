@@ -21,7 +21,7 @@ export function cycle (array) {
   }
 }
 
-function getBBox (from) {
+const getBBox = from => {
   const _getBBox = SVGGraphicsElement.prototype.getBBox
   var bbox, tempDiv, tempSvg
   if (document.contains(from)) {
