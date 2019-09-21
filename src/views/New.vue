@@ -110,7 +110,7 @@ import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
 import { createUrl, cycle, getColorInBounds } from '../utils'
 import { saveAs } from 'file-saver'
-import colorString from 'color-string'
+import Color from 'color'
 import pixels from 'image-pixels'
 import palette from 'image-palette'
 
@@ -361,7 +361,7 @@ export default {
         const imagePalette = palette(imagePixels)
 
         this.palette = imagePalette.colors.map(color => {
-          const hex = colorString.to.hex(color)
+          const hex = Color(color).hex()
 
           return hex
         })
@@ -450,8 +450,8 @@ export default {
     ...mapState(['loading']),
 
     bgColor () {
-      const [r, g, b] = colorString.get.rgb(this.backgroundColor)
-      return colorString.to.hex([r, g, b], this.backgroundOpacity)
+      const [r, g, b] = Color.rgb(this.backgroundColor).array()
+      return Color([r, g, b], this.backgroundOpacity).hex()
     },
 
     stepStyle () {

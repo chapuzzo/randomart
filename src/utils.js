@@ -1,5 +1,5 @@
 import { Base64 } from 'js-base64'
-import colorString from 'color-string'
+import Color from 'color'
 import inside from 'point-in-polygon'
 
 export function getSeed () {
@@ -63,9 +63,7 @@ const getColorAt = (coords, image) => {
   const b = (color >> 8) & 0xff
   const a = (color >> 0) & 0xff
 
-  const hex = colorString.to.hex(r, g, b, a)
-
-  return hex
+  return Color.rgb([r, g, b, a]).hex()
 }
 
 const addColouredPointAt = (coords, color, svg, size = 5, stroke = false) => {
