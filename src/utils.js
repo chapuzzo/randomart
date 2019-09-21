@@ -43,12 +43,13 @@ const getBBox = from => {
   }
 }
 
-const createPoint = (coords) => {
+const createDebugPoint = (coords, color, size = 5) => {
   const point = document.createElement('circle')
 
   point.setAttribute('cx', coords.x)
   point.setAttribute('cy', coords.y)
-  point.setAttribute('r', 5)
+  point.setAttribute('r', size)
+  point.setAttribute('fill', color)
 
   return point
 }
@@ -66,10 +67,8 @@ const getColorAt = (coords, image) => {
   return hex
 }
 
-const addColouredPointAt = (coords, color, svg, stroke = false) => {
-  const point = createPoint(coords)
-
-  point.setAttribute('fill', color)
+const addColouredPointAt = (coords, color, svg, size = 5, stroke = false) => {
+  const point = createDebugPoint(coords, color, size)
 
   if (stroke) {
     point.setAttribute('stroke', 'black')
