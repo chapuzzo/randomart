@@ -405,11 +405,14 @@ export default {
 
           const path = rc.path(polygonPath, {
             simplification: this.simplification,
-            ...polygonFill({ fill: `${color}` })
+            ...polygonFill({
+              fill: `${color}`
+            })
           })
 
           originalPath.removeAttribute('style')
-          originalPath.setAttribute('fill', 'none')
+          // originalPath.setAttribute('fill', 'none')
+          originalPath.setAttribute('fill', color)
           originalPath.setAttribute('stroke', getColor())
           originalPath.setAttribute('stroke', color)
           originalPath.setAttribute('stroke-width', 1)
