@@ -6,6 +6,11 @@
         <span class="input">select</span>
         <input @change="loadFile" hidden type="file">
       </label>
+
+      <label style="display: block; margin-top: 15px">url
+        <input  type="text" @change="loadURL($event.target.value)">
+      </label>
+
     </fieldset>
   </div>
 </template>
@@ -32,6 +37,24 @@ export default {
           })
 
           fileReader.readAsDataURL(event.target.files[0])
+        })
+      }, 'reading image')
+
+      this.$emit('selected', loaded)
+    },
+
+    async loadURL (source) {
+      if (!source.length) {
+        return
+      }
+
+      const loaded = await this.withLoader(async () => {
+        return new Promise((resolve, reject) => {
+          Jimp.read(source)
+            .then(loadedImage => {
+              resolve(loadedImage)
+            })
+            .catch(error => reject(error))
         })
       }, 'reading image')
 
