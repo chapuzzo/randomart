@@ -51,11 +51,25 @@
       >
         <div
           class="color"
-          :key="color"
+          :key="`${color}-${index}`"
           :style="{
             backgroundColor: color
           }"
-          v-for="color in palette">
+          v-for="(color, index) in palette">
+        </div>
+      </div>
+
+      <div
+        class="palette"
+        v-if="lightPalette"
+      >
+        <div
+          class="color"
+          :key="`${color}-${index}`"
+          :style="{
+            backgroundColor: color
+          }"
+          v-for="(color, index) in lightPalette">
         </div>
       </div>
 
@@ -108,7 +122,7 @@ import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
-import { createUrl, cycle, getColorInBounds } from '../utils'
+import { createUrl, cycle, getColorInBounds, lightenPalette } from '../utils'
 import { saveAs } from 'file-saver'
 import Color from 'color'
 import pixels from 'image-pixels'
@@ -175,6 +189,7 @@ export default {
       height: null,
       width: null,
       palette: null,
+      lightPalette: null,
       backgroundColor: '#ffffff',
       backgroundOpacity: 1,
       simplification: 0,
@@ -360,11 +375,8 @@ export default {
         const imagePixels = await pixels(this.thumbURI)
         const imagePalette = palette(imagePixels)
 
-        this.palette = imagePalette.colors.map(color => {
-          const hex = Color(color).hex()
-
-          return hex
-        })
+        this.palette = imagePalette.colors.map(color => Color(color).hex())
+        this.lightPalette = lightenPalette(this.palette)
       }, 'extracting palette')
       this.$emit('extracted-palette')
     },

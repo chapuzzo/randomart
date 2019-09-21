@@ -125,3 +125,10 @@ export const getColorInBounds = (path, image, svg, debug = false) => {
 
   return extractedColor
 }
+
+export const lightenPalette = (palette, amount = 0.5) => palette.map(color => {
+  const parsedColor = Color(color)
+  const lightColor = parsedColor.lighten(amount).hex()
+
+  return lightColor
+})
