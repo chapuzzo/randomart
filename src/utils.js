@@ -1,5 +1,6 @@
 import { Base64 } from 'js-base64'
 import colorString from 'color-string'
+import inside from 'point-in-polygon'
 
 export function getSeed () {
   return Base64.encodeURI(String(Math.random()).substr(2))
@@ -77,31 +78,52 @@ const addColouredPointAt = (coords, color, svg, size = 5, stroke = false) => {
   svg.appendChild(point)
 }
 
+const getPoint = boundaries => {
+  const coords = {
+    x: boundaries.x + Math.random() * boundaries.width,
+    y: boundaries.y + Math.random() * boundaries.height
+  }
+
+  return coords
+}
+
+const discretize = svgGraphicsElement => {
+  const length = svgGraphicsElement.getTotalLength()
+  const step = Math.floor(length / 100)
+  const amount = Math.floor(length / step)
+
+  return Array(amount).fill().map((_, index) => {
+    const point = svgGraphicsElement.getPointAtLength(index * step)
+
+    return [point.x, point.y]
+  })
+}
+
+const isInside = (container, point) => {
+  const points = discretize(container)
+
+  return inside([point.x, point.y], points)
+}
+
 export const getColorInBounds = (path, image, svg, debug = false) => {
   const bbox = getBBox(path)
 
-  const getPoint = () => {
-    const point = DOMPoint.fromPoint({
-      x: bbox.x + Math.random() * bbox.width,
-      y: bbox.y + Math.random() * bbox.height
-    })
-
-    return point
-  }
-
+  let count = 0
   let point = getPoint(bbox)
-  while (!path.isPointInFill(point)) {
+
+  while (!isInside(path, point) && count++ < 15) {
     point = getPoint(bbox)
     if (debug) {
       addColouredPointAt(point, getColorAt(point, image), svg)
     }
   }
 
-  const color = getColorAt(point, image)
+  const extractedColor = getColorAt(point, image)
+
   if (debug) {
-    addColouredPointAt(point, color, svg, true)
-    console.log(`%c ${color}`, `color: ${color};`)
+    addColouredPointAt(point, extractedColor, svg, 5, true)
+    console.log(`%c ${extractedColor}`, `color: ${extractedColor};`)
   }
 
-  return color
+  return extractedColor
 }
