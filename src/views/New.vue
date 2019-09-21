@@ -23,6 +23,15 @@
         <input max="1000" min="100" step="5" type="range" v-model.number="maxSize">
         <span>{{maxSize}}</span>
       </label>
+
+      <label class="setting">background triangles from image palette
+        <input type="checkbox" v-model="trianglesFromImagePalette">
+      </label>
+
+      <label v-if="palette">
+        <input type="button" @click="recreateTrianglesBackground" value="recreate triangles">
+      </label>
+
     </fieldset>
 
     <fieldset>
@@ -122,7 +131,7 @@ import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
-import { createUrl, cycle, getColorInBounds, lightenPalette } from '../utils'
+import { createUrl, cycle, getColorInBounds, lightenPalette, shuffle } from '../utils'
 import { saveAs } from 'file-saver'
 import Color from 'color'
 import pixels from 'image-pixels'
@@ -152,12 +161,10 @@ const posterize = (image, options) => {
   })
 }
 
-const createTriangles = ({ height, width }) => {
-  return Trianglify({
-    height,
-    width
+const createTriangles = options =>
+  Trianglify({
+    ...options
   }).svg({ includeNamespace: true })
-}
 
 function createSizedSVG (width, height) {
   const namespaceURI = 'http://www.w3.org/2000/svg'
@@ -195,7 +202,8 @@ export default {
       simplification: 0,
       threshold: -1,
       maxSize: 500,
-      fakeDelay: 700
+      fakeDelay: 700,
+      trianglesFromImagePalette: false
     }
   },
 
@@ -222,6 +230,14 @@ export default {
       }
 
       this.$emit('changed-simplification')
+    },
+
+    trianglesFromImagePalette () {
+      if (!this.palette) {
+        return
+      }
+
+      this.recreateTrianglesBackground()
     }
   },
 
@@ -230,7 +246,8 @@ export default {
 
     this.$on('changed-image', this.posterizeThumb)
     this.$on('changed-image', this.extractPalette)
-    this.$on('changed-image', this.createTriangles)
+
+    this.$on('extracted-palette', this.createTriangles)
 
     this.$on('posterized-thumb', this.extractPosterPaths)
 
@@ -278,7 +295,11 @@ export default {
       await this.withLoader(async () => {
         const triangles = createTriangles({
           height: this.height,
-          width: this.width
+          width: this.width,
+          ...(this.trianglesFromImagePalette ? {
+            x_colors: shuffle(this.lightPalette.slice(0)),
+            y_colors: shuffle(this.lightPalette.slice(0))
+          } : {})
         })
 
         this.triangles = triangles.outerHTML
@@ -345,6 +366,7 @@ export default {
         })
 
         this.posterPaths.forEach(path => {
+          path.setAttribute('stroke', 'none')
           merged.appendChild(path)
         })
 
@@ -456,6 +478,11 @@ export default {
 
         canvas.toBlob(blob => saveAs(blob, 'traced.png'))
       })
+    },
+
+    recreateTrianglesBackground () {
+      this.$once('created-triangles', this.mergePaths)
+      this.createTriangles()
     }
   },
   computed: {
@@ -488,6 +515,11 @@ export default {
 
   .input, input[type="button"] {
     display: block;
+    min-width: 110px;
+    margin: {
+      left: auto;
+      right: auto;
+    };
     border: 1px black solid;
     border-radius: 3px;
     padding: 5px;
