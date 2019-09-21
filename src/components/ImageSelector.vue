@@ -3,7 +3,7 @@
     <fieldset>
       <legend>image</legend>
       <label>
-        <span class="input">select</span>
+        <input type="button" value="select">
         <input @change="loadFile" hidden type="file">
       </label>
 
@@ -67,6 +67,11 @@ export default {
 <style lang="scss" scoped>
   .input, input[type="button"] {
     display: block;
+    min-width: 110px;
+    margin: {
+      left: auto;
+      right: auto;
+    };
     border: 1px black solid;
     border-radius: 3px;
     padding: 5px;
