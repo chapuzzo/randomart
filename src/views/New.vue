@@ -29,7 +29,9 @@
       </label>
 
       <label v-if="palette">
-        <input type="button" @click="recreateTrianglesBackground" value="recreate triangles">
+        <div>
+          <span @click="recreateTrianglesBackground" class="input">recreate triangles</span>
+        </div>
       </label>
 
     </fieldset>
@@ -514,7 +516,7 @@ export default {
   @import '../style/loader';
 
   .input, input[type="button"] {
-    display: block;
+    display: inline-block;
     min-width: 110px;
     margin: {
       left: auto;
