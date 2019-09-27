@@ -147,6 +147,7 @@ const createThumb = (image, maxSize = 200) => {
   }
 
   return image.clone().resize(...newDimensions)
+    .blur(2)
 }
 
 const posterize = (image, options) => {
