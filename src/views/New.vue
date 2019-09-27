@@ -61,11 +61,11 @@
         v-if="palette"
       >
         <div
-          class="color"
           :key="`${color}-${index}`"
           :style="{
             backgroundColor: color
           }"
+          class="color"
           v-for="(color, index) in palette">
         </div>
       </div>
@@ -75,11 +75,11 @@
         v-if="lightPalette"
       >
         <div
-          class="color"
           :key="`${color}-${index}`"
           :style="{
             backgroundColor: color
           }"
+          class="color"
           v-for="(color, index) in lightPalette">
         </div>
       </div>
@@ -145,7 +145,6 @@ const createThumb = (image, maxSize = 200) => {
   if (image.getWidth() < image.getHeight()) {
     newDimensions.reverse()
   }
-
   return image.clone().resize(...newDimensions)
     .blur(2)
 }
