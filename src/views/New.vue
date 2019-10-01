@@ -179,6 +179,26 @@ function createSizedSVG (width, height) {
   return svg
 }
 
+function extractPaths (posterizedImage) {
+  const domParser = new DOMParser()
+  const posterizedThumb = domParser.parseFromString(posterizedImage, 'image/svg+xml')
+
+  return Array.from(posterizedThumb.querySelectorAll('path'))
+}
+
+function mergePaths (trianglePaths, posterPaths, svg) {
+  trianglePaths.forEach(path => {
+    svg.appendChild(path)
+  })
+
+  posterPaths.forEach(path => {
+    path.setAttribute('stroke', 'none')
+    svg.appendChild(path)
+  })
+
+  return svg.outerHTML
+}
+
 export default {
   name: 'Editor',
   data () {
@@ -281,14 +301,30 @@ export default {
     },
 
     async selectedImage (image) {
+      function thumbnailize (image, maxSize, mime = 'image/png') {
+        const thumb = createThumb(image, maxSize)
+
+        return new Promise((resolve, reject) => {
+          thumb.getBase64(mime, (error, thumbURI) => {
+            if (error) {
+              reject(error)
+            }
+
+            resolve({
+              thumb,
+              thumbURI,
+              height: thumb.getHeight(),
+              width: thumb.getWidth()
+            })
+          })
+        })
+      }
+
       await this.withLoader(async () => {
         this.image = image
+        const source = await thumbnailize(image, this.maxSize)
 
-        this.thumb = createThumb(image, this.maxSize)
-        this.height = this.thumb.getHeight()
-        this.width = this.thumb.getWidth()
-
-        this.thumbURI = await this.thumb.getBase64Async('image/png')
+        Object.assign(this, source)
       }, 'creating thumb')
       this.$emit('changed-image')
     },
@@ -351,10 +387,9 @@ export default {
 
     async extractPosterPaths () {
       await this.withLoader(async () => {
-        const domParser = new DOMParser()
-        const posterizedThumb = domParser.parseFromString(this.posterizedThumb, 'image/svg+xml')
+        const posterizedImage = this.posterizedThumb
 
-        this.posterPaths = Array.from(posterizedThumb.querySelectorAll('path'))
+        this.posterPaths = extractPaths(posterizedImage)
       }, 'extracting paths from posterized')
       this.$emit('extracted-poster-paths')
     },
@@ -363,16 +398,10 @@ export default {
       await this.withLoader(async () => {
         const merged = createSizedSVG(this.width, this.height)
 
-        this.trianglePaths.forEach(path => {
-          merged.appendChild(path)
-        })
+        const trianglePaths = this.trianglePaths
+        const posterPaths = this.posterPaths
 
-        this.posterPaths.forEach(path => {
-          path.setAttribute('stroke', 'none')
-          merged.appendChild(path)
-        })
-
-        this.merged = merged.outerHTML
+        this.merged = mergePaths(trianglePaths, posterPaths, merged)
       }, 'merging paths')
       this.$emit('merged-paths')
     },
@@ -550,7 +579,7 @@ export default {
       display: block;
       margin: 15px;
 
-      .color  {
+      .color {
         display: inline-block;
         width: 25px;
         height: 25px;
