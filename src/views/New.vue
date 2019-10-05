@@ -291,7 +291,11 @@ export default {
       this.loadingMessage = message
       const [, value] = await Promise.all([
         new Promise((resolve, reject) => {
-          setTimeout(resolve, this.fakeDelay)
+          try {
+            setTimeout(resolve, this.fakeDelay)
+          } catch (e) {
+            reject(e)
+          }
         }),
         callback()
       ])
