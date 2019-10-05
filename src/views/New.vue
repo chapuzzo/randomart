@@ -289,19 +289,21 @@ export default {
       this.enableLoader()
       // console.log('wl> ' + message)
       this.loadingMessage = message
-      const [, value] = await Promise.all([
-        new Promise((resolve, reject) => {
-          try {
+
+      try {
+        const [, value] = await Promise.all([
+          new Promise((resolve) => {
             setTimeout(resolve, this.fakeDelay)
-          } catch (e) {
-            reject(e)
-          }
-        }),
-        callback()
-      ])
-      // console.log('<wl ' + message)
-      this.disableLoader()
-      return value
+          }),
+          callback()
+        ])
+        // console.log('<wl ' + message)
+        return value
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this.disableLoader()
+      }
     },
 
     async selectedImage (image) {
