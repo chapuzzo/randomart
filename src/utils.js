@@ -329,8 +329,6 @@ export async function extractPalettes (source) {
 
   const colors = imagePalette.colors.map(color => Color(color).hex())
 
-  console.log(colors)
-
   return {
     palette: colors,
     lightPalette: lightenPalette(colors)
