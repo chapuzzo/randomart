@@ -131,6 +131,7 @@ import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
 import {
+  applyOpacity,
   createSizedSVG,
   createUrl,
   cycle,
@@ -144,7 +145,6 @@ import {
   trianglize
 } from '../utils'
 import { saveAs } from 'file-saver'
-import Color from 'color'
 
 export default {
   name: 'Editor',
@@ -369,8 +369,7 @@ export default {
     ...mapState(['loading']),
 
     bgColor () {
-      const [r, g, b] = Color.rgb(this.backgroundColor).array()
-      return Color([r, g, b, this.backgroundOpacity]).string()
+      return applyOpacity(this.backgroundColor, this.backgroundOpacity)
     },
 
     stepStyle () {

@@ -324,3 +324,9 @@ export async function extractPalettes (source) {
     lightPalette: lightenPalette(colors)
   }
 }
+
+export function applyOpacity (color, opacity) {
+  const [r, g, b] = Color.rgb(color).array()
+
+  return Color([r, g, b, opacity]).string()
+}
