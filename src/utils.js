@@ -254,7 +254,33 @@ const polygonFill = (getColor, options = {}) => ({
   ...options
 })
 
-export function tracer (paths, thumb, width, height, simplification, getColor) {
+export function traceTriangles (width, height) {
+  const triangles = Trianglify({
+    height,
+    width
+  })
+
+  const traced = createSizedSVG(width, height)
+
+  const rc = rough.svg(traced)
+
+  triangles.polys.forEach(([color, points]) => {
+    const polygon = rc.polygon(points, {
+      stroke: color,
+      roughness: 3,
+      fillStyle: 'hachure',
+      fill: color,
+      hachureAngle: Math.random() * 360
+      // strokeWidth: Math.random() * 8
+    })
+
+    traced.appendChild(polygon)
+  })
+
+  return traced.outerHTML
+}
+
+export function roughTracer (paths, thumb, width, height, simplification, getColor) {
   const traced = createSizedSVG(width, height)
 
   const rc = rough.svg(traced)

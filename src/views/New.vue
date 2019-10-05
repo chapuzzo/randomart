@@ -127,7 +127,6 @@
 <script>
 import ImageSelector from '../components/ImageSelector'
 import StepDisplay from '../components/StepDisplay'
-import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
@@ -140,7 +139,8 @@ import {
   mergePaths,
   posterize,
   thumbnailize,
-  tracer,
+  roughTracer,
+  traceTriangles,
   trianglize
 } from '../utils'
 import { saveAs } from 'file-saver'
@@ -273,29 +273,7 @@ export default {
 
     async traceTriangles () {
       await this.withLoader(async () => {
-        const triangles = Trianglify({
-          height: this.height,
-          width: this.width
-        })
-
-        const traced = createSizedSVG(this.width, this.height)
-
-        const rc = rough.svg(traced)
-
-        triangles.polys.forEach(([color, points]) => {
-          const polygon = rc.polygon(points, {
-            stroke: color,
-            roughness: 3,
-            fillStyle: 'hachure',
-            fill: color,
-            hachureAngle: Math.random() * 360
-            // strokeWidth: Math.random() * 8
-          })
-
-          traced.appendChild(polygon)
-        })
-
-        this.tracedTriangles = traced.outerHTML
+        this.tracedTriangles = traceTriangles(this.width, this.height)
       }, 'tracing triangles')
       this.$emit('traced-triangles')
     },
@@ -362,7 +340,7 @@ export default {
       const getColor = cycle(this.palette)
 
       await this.withLoader(async () => {
-        this.roughTraced = tracer(this.posterPaths, this.thumb, this.width, this.height, this.simplification, getColor)
+        this.roughTraced = roughTracer(this.posterPaths, this.thumb, this.width, this.height, this.simplification, getColor)
       }, 'roughing paths')
       this.$emit('roughed-poster-paths')
     },
