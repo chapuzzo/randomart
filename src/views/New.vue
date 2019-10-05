@@ -127,57 +127,24 @@
 <script>
 import ImageSelector from '../components/ImageSelector'
 import StepDisplay from '../components/StepDisplay'
-import Jimp from 'jimp'
-import { Posterizer } from 'potrace'
-import Trianglify from 'trianglify'
-import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
-import { createUrl, cycle, getColorInBounds, lightenPalette, shuffle } from '../utils'
+import {
+  applyOpacity,
+  createSizedSVG,
+  createUrl,
+  cycle,
+  extractPalettes,
+  extractPaths,
+  mergePaths,
+  posterize,
+  roughTracer,
+  thumbnailize,
+  simpleTracer,
+  traceTriangles,
+  trianglize
+} from '../utils'
 import { saveAs } from 'file-saver'
-import Color from 'color'
-import pixels from 'image-pixels'
-import palette from 'image-palette'
-
-const createThumb = (image, maxSize = 200) => {
-  let newDimensions = [maxSize, Jimp.AUTO]
-
-  if (image.getWidth() < image.getHeight()) {
-    newDimensions.reverse()
-  }
-  return image.clone().resize(...newDimensions)
-    .blur(2)
-}
-
-const posterize = (image, options) => {
-  const posterizer = new Posterizer(options)
-
-  return new Promise((resolve, reject) => {
-    posterizer.loadImage(image, error => {
-      if (error) {
-        reject(error)
-      }
-
-      resolve(posterizer.getSVG())
-    })
-  })
-}
-
-const createTriangles = options =>
-  Trianglify({
-    ...options
-  }).svg({ includeNamespace: true })
-
-function createSizedSVG (width, height) {
-  const namespaceURI = 'http://www.w3.org/2000/svg'
-  const svg = document.createElementNS(namespaceURI, 'svg')
-  svg.setAttribute('xmlns', namespaceURI)
-
-  svg.setAttribute('width', width)
-  svg.setAttribute('height', height)
-
-  return svg
-}
 
 export default {
   name: 'Editor',
@@ -269,73 +236,42 @@ export default {
       this.enableLoader()
       // console.log('wl> ' + message)
       this.loadingMessage = message
-      const [, value] = await Promise.all([
-        new Promise((resolve, reject) => {
-          setTimeout(resolve, this.fakeDelay)
-        }),
-        callback()
-      ])
-      // console.log('<wl ' + message)
-      this.disableLoader()
-      return value
+
+      try {
+        const [, value] = await Promise.all([
+          new Promise((resolve) => {
+            setTimeout(resolve, this.fakeDelay)
+          }),
+          callback()
+        ])
+        // console.log('<wl ' + message)
+        return value
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this.disableLoader()
+      }
     },
 
     async selectedImage (image) {
       await this.withLoader(async () => {
         this.image = image
 
-        this.thumb = createThumb(image, this.maxSize)
-        this.height = this.thumb.getHeight()
-        this.width = this.thumb.getWidth()
-
-        this.thumbURI = await this.thumb.getBase64Async('image/png')
+        Object.assign(this, await thumbnailize(image, this.maxSize))
       }, 'creating thumb')
       this.$emit('changed-image')
     },
 
     async createTriangles () {
       await this.withLoader(async () => {
-        const triangles = createTriangles({
-          height: this.height,
-          width: this.width,
-          ...(this.trianglesFromImagePalette ? {
-            x_colors: shuffle(this.lightPalette.slice(0)),
-            y_colors: shuffle(this.lightPalette.slice(0))
-          } : {})
-        })
-
-        this.triangles = triangles.outerHTML
-
-        this.trianglePaths = Array.from(triangles.querySelectorAll('path'))
+        Object.assign(this, trianglize(this.height, this.width, this.trianglesFromImagePalette ? this.lightPalette : null))
       }, 'creating triangles pattern')
       this.$emit('created-triangles')
     },
 
     async traceTriangles () {
       await this.withLoader(async () => {
-        const triangles = Trianglify({
-          height: this.height,
-          width: this.width
-        })
-
-        const traced = createSizedSVG(this.width, this.height)
-
-        const rc = rough.svg(traced)
-
-        triangles.polys.forEach(([color, points]) => {
-          const polygon = rc.polygon(points, {
-            stroke: color,
-            roughness: 3,
-            fillStyle: 'hachure',
-            fill: color,
-            hachureAngle: Math.random() * 360
-            // strokeWidth: Math.random() * 8
-          })
-
-          traced.appendChild(polygon)
-        })
-
-        this.tracedTriangles = traced.outerHTML
+        this.tracedTriangles = traceTriangles(this.width, this.height)
       }, 'tracing triangles')
       this.$emit('traced-triangles')
     },
@@ -351,10 +287,9 @@ export default {
 
     async extractPosterPaths () {
       await this.withLoader(async () => {
-        const domParser = new DOMParser()
-        const posterizedThumb = domParser.parseFromString(this.posterizedThumb, 'image/svg+xml')
+        const posterizedImage = this.posterizedThumb
 
-        this.posterPaths = Array.from(posterizedThumb.querySelectorAll('path'))
+        this.posterPaths = extractPaths(posterizedImage)
       }, 'extracting paths from posterized')
       this.$emit('extracted-poster-paths')
     },
@@ -363,44 +298,24 @@ export default {
       await this.withLoader(async () => {
         const merged = createSizedSVG(this.width, this.height)
 
-        this.trianglePaths.forEach(path => {
-          merged.appendChild(path)
-        })
+        const trianglePaths = this.trianglePaths
+        const posterPaths = this.posterPaths
 
-        this.posterPaths.forEach(path => {
-          path.setAttribute('stroke', 'none')
-          merged.appendChild(path)
-        })
-
-        this.merged = merged.outerHTML
+        this.merged = mergePaths(trianglePaths, posterPaths, merged)
       }, 'merging paths')
       this.$emit('merged-paths')
     },
 
     async tracePosterPaths () {
       await this.withLoader(async () => {
-        const traced = createSizedSVG(this.width, this.height)
-
-        const rc = rough.svg(traced)
-        this.posterPaths.forEach(originalPath => {
-          const path = rc.path(originalPath.getAttribute('d'), {
-            simplification: this.simplification
-          })
-          traced.appendChild(path)
-        })
-
-        this.traced = traced.outerHTML
+        this.traced = simpleTracer(this.posterPaths, this.width, this.height, this.simplification)
       }, 'tracing paths')
       this.$emit('traced-poster-paths')
     },
 
     async extractPalette () {
       await this.withLoader(async () => {
-        const imagePixels = await pixels(this.thumbURI)
-        const imagePalette = palette(imagePixels)
-
-        this.palette = imagePalette.colors.map(color => Color(color).hex())
-        this.lightPalette = lightenPalette(this.palette)
+        Object.assign(this, await extractPalettes(this.thumb.resize(50, 50).getBufferAsync('image/png')))
       }, 'extracting palette')
       this.$emit('extracted-palette')
     },
@@ -408,55 +323,8 @@ export default {
     async roughifyPosterPaths () {
       const getColor = cycle(this.palette)
 
-      const polygonFill = (options = {}) => ({
-        fillStyle: 'hachure',
-        roughness: 3,
-        stroke: 'transparent',
-        hachureAngle: Math.random() * 360,
-        fill: getColor(),
-        ...options
-      })
-
       await this.withLoader(async () => {
-        const traced = createSizedSVG(this.width, this.height)
-
-        const rc = rough.svg(traced)
-
-        // background for "empty" images
-        //
-        // const bg = rc.polygon([
-        //   [0, 0],
-        //   [0, this.height],
-        //   [this.width, this.height],
-        //   [this.width, 0],
-        //   [0, 0]
-        // ], {
-        //   ...polygonFill()
-        // })
-        // traced.appendChild(bg)
-
-        this.posterPaths.forEach(originalPath => {
-          const polygonPath = originalPath.getAttribute('d').replace(/,\s+/g, ',')
-          const color = getColorInBounds(originalPath, this.thumb, traced)
-
-          const path = rc.path(polygonPath, {
-            simplification: this.simplification,
-            ...polygonFill({
-              fill: `${color}`
-            })
-          })
-
-          originalPath.removeAttribute('style')
-          // originalPath.setAttribute('fill', 'none')
-          originalPath.setAttribute('fill', color)
-          originalPath.setAttribute('stroke', getColor())
-          originalPath.setAttribute('stroke', color)
-          originalPath.setAttribute('stroke-width', 1)
-          traced.appendChild(originalPath)
-          traced.appendChild(path)
-        })
-
-        this.roughTraced = traced.outerHTML
+        this.roughTraced = roughTracer(this.posterPaths, this.thumb, this.width, this.height, this.simplification, getColor)
       }, 'roughing paths')
       this.$emit('roughed-poster-paths')
     },
@@ -491,8 +359,7 @@ export default {
     ...mapState(['loading']),
 
     bgColor () {
-      const [r, g, b] = Color.rgb(this.backgroundColor).array()
-      return Color([r, g, b], this.backgroundOpacity).hex()
+      return applyOpacity(this.backgroundColor, this.backgroundOpacity)
     },
 
     stepStyle () {
@@ -550,7 +417,7 @@ export default {
       display: block;
       margin: 15px;
 
-      .color  {
+      .color {
         display: inline-block;
         width: 25px;
         height: 25px;
