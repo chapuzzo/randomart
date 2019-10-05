@@ -525,7 +525,7 @@ export default {
 
     bgColor () {
       const [r, g, b] = Color.rgb(this.backgroundColor).array()
-      return Color([r, g, b], this.backgroundOpacity).hex()
+      return Color([r, g, b, this.backgroundOpacity]).string()
     },
 
     stepStyle () {
