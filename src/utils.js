@@ -5,6 +5,8 @@ import Trianglify from 'trianglify'
 import rough from 'roughjs/bin/wrappers/rough'
 import { Posterizer } from 'potrace'
 import Jimp from 'jimp'
+import pixels from 'image-pixels'
+import palette from 'image-palette'
 
 export function getSeed () {
   return Base64.encodeURI(String(Math.random()).substr(2))
@@ -307,4 +309,18 @@ export function roughTracer (paths, thumb, width, height, simplification, getCol
   })
 
   return traced.outerHTML
+}
+
+export async function extractPalettes (source) {
+  const imagePixels = await pixels(source)
+  const imagePalette = palette(imagePixels)
+
+  const colors = imagePalette.colors.map(color => Color(color).hex())
+
+  console.log(colors)
+
+  return {
+    palette: colors,
+    lightPalette: lightenPalette(colors)
+  }
 }

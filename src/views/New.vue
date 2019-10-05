@@ -134,19 +134,17 @@ import {
   createSizedSVG,
   createUrl,
   cycle,
+  extractPalettes,
   extractPaths,
-  lightenPalette,
   mergePaths,
   posterize,
-  thumbnailize,
   roughTracer,
+  thumbnailize,
   traceTriangles,
   trianglize
 } from '../utils'
 import { saveAs } from 'file-saver'
 import Color from 'color'
-import pixels from 'image-pixels'
-import palette from 'image-palette'
 
 export default {
   name: 'Editor',
@@ -327,11 +325,7 @@ export default {
 
     async extractPalette () {
       await this.withLoader(async () => {
-        const imagePixels = await pixels(this.thumbURI)
-        const imagePalette = palette(imagePixels)
-
-        this.palette = imagePalette.colors.map(color => Color(color).hex())
-        this.lightPalette = lightenPalette(this.palette)
+        Object.assign(this, await extractPalettes(this.thumb.resize(50, 50).getBufferAsync('image/png')))
       }, 'extracting palette')
       this.$emit('extracted-palette')
     },
