@@ -127,7 +127,6 @@
 <script>
 import ImageSelector from '../components/ImageSelector'
 import StepDisplay from '../components/StepDisplay'
-import rough from 'roughjs/bin/wrappers/rough'
 import GridLoader from 'vue-spinner/src/GridLoader'
 import { mapActions, mapState } from 'vuex'
 import {
@@ -141,6 +140,7 @@ import {
   posterize,
   roughTracer,
   thumbnailize,
+  simpleTracer,
   traceTriangles,
   trianglize
 } from '../utils'
@@ -308,17 +308,7 @@ export default {
 
     async tracePosterPaths () {
       await this.withLoader(async () => {
-        const traced = createSizedSVG(this.width, this.height)
-
-        const rc = rough.svg(traced)
-        this.posterPaths.forEach(originalPath => {
-          const path = rc.path(originalPath.getAttribute('d'), {
-            simplification: this.simplification
-          })
-          traced.appendChild(path)
-        })
-
-        this.traced = traced.outerHTML
+        this.traced = simpleTracer(this.posterPaths, this.width, this.height, this.simplification)
       }, 'tracing paths')
       this.$emit('traced-poster-paths')
     },

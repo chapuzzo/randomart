@@ -282,6 +282,18 @@ export function traceTriangles (width, height) {
   return traced.outerHTML
 }
 
+export function simpleTracer (paths, width, height, simplification) {
+  const traced = createSizedSVG(width, height)
+
+  const rc = rough.svg(traced)
+  paths.forEach(originalPath => {
+    const path = rc.path(originalPath.getAttribute('d'), {
+      simplification
+    })
+    traced.appendChild(path)
+  })
+}
+
 export function roughTracer (paths, thumb, width, height, simplification, getColor) {
   const traced = createSizedSVG(width, height)
 
